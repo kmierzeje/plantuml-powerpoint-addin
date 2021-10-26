@@ -1,18 +1,22 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit 
+   OleObjectBlob   =   "PlantUMLEdit.frx":0000
    Caption         =   "PlantUML"
    ClientHeight    =   7755
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   11415
-   OleObjectBlob   =   "PlantUMLEdit.frx":0000
    StartUpPosition =   1  'CenterOwner
+   TypeInfoVer     =   72
 End
 Attribute VB_Name = "PlantUMLEdit"
+Attribute VB_Base = "0{DD6BA863-EBED-48B2-9A5C-D1A6F4E7B602}{CF148DD0-B1BF-4142-A281-53445BD2A1B2}"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Attribute VB_TemplateDerived = False
+Attribute VB_Customizable = False
 
 Private WithEvents oFormResize As UserFormResizer
 Attribute oFormResize.VB_VarHelpID = -1

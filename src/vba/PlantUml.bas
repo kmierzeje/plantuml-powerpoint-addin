@@ -3,6 +3,8 @@ Sub SyncShell(ByVal Cmd As String, ByVal WindowStyle As VbAppWinStyle)
     VBA.CreateObject("WScript.Shell").Run Cmd, WindowStyle, True
 End Sub
 
+
+
 Function WriteToTmpFile(sText As String)
     Set fso = CreateObject("Scripting.FileSystemObject")
     Dim tempFileName As String
@@ -140,4 +142,3 @@ Public Sub SetPicture(shp As Shape, fname As String)
     shp.height = h * scaleY
 
 End Sub
-
