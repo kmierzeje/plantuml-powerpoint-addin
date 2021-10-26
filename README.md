@@ -20,6 +20,14 @@ The add-in adds "PlantUml" group to "Insert Tab" with "Insert Diagram" button in
 
    ![obraz](https://user-images.githubusercontent.com/66111032/138904193-a8c70b1b-b9e8-4f72-8b4d-1e46c42c3af1.png)
 
+## Download
+
+[PlantUml PowerPoint Add-in 1.0](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.0/PlantUml.ppam)
+
+## Install
+
+Opening `PlantUml.ppam` with PowerPoint will install the add-in.
+
 ## Build
 
 1. Zip the content of `src/PlantUml.pptm` folder to an archive named `PlantUml.pptm`.
@@ -30,6 +38,4 @@ The add-in adds "PlantUml" group to "Insert Tab" with "Insert Diagram" button in
 4. Open `PlantUml.pptm` with PowerPoint.
 5. Save As "PowerPoint Add-in" named `PlantUml.ppam`.
 
-## Install
 
-Opening `PlantUml.ppam` with PowerPoint will install the add-in.
