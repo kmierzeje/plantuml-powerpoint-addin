@@ -1,16 +1,16 @@
-<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="PlantUml.OnLoad">
 	<ribbon startFromScratch="false">
 		<tabs>
                <tab idMso="TabInsert">
                  <group id="PlantUMLGroup" label="PlantUML">
-                   <button id="PlantUMLBtn" label="Insert Diagram" size="large" image="plantuml" onAction="PlantUml.InsertDiagram"/>
+                   <button id="PlantUMLBtn" label="Insert Diagram" size="large" image="plantuml" onAction="PlantUml.InsertDiagram" getEnabled="PlantUml.PlantUMLBtn_GetEnabled" />
                  </group>
                </tab>
            </tabs>
 	</ribbon>
       <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-          <button id="PlantUMLEdit" label="Edit PlantUML" image="plantuml" onAction="PlantUml.EditDiagram" />
+          <button id="PlantUMLEdit" label="Edit PlantUML" image="plantuml" onAction="PlantUml.EditDiagram" getVisible="PlantUml.PlantUMLEdit_GetVisible" />
         </contextMenu>
       </contextMenus>
 </customUI>

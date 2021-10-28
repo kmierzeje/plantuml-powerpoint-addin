@@ -1,9 +1,14 @@
 Attribute VB_Name = "PlantUml"
+Dim UIController As UIController
+
+Sub OnLoad(Ribbon As IRibbonUI)
+    Set UIController = New UIController
+    Set UIController.Ribbon = Ribbon
+End Sub
+
 Sub SyncShell(ByVal Cmd As String, ByVal WindowStyle As VbAppWinStyle)
     VBA.CreateObject("WScript.Shell").Run Cmd, WindowStyle, True
 End Sub
-
-
 
 Function WriteToTmpFile(sText As String)
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -50,6 +55,7 @@ End Function
 
 
 Public Sub InsertDiagram()
+    On Error GoTo Failed
     Dim sld As Slide
     Dim shp As Shape
     Set sld = Application.ActiveWindow.View.Slide
@@ -66,6 +72,8 @@ Public Sub InsertDiagram()
     If shp.Tags("plantuml") = "" Then
         shp.Delete
     End If
+Failed:
+
 End Sub
 
 Public Sub EditDiagram()
@@ -93,6 +101,9 @@ Public Function UpdateDiagram(shp As Shape, body As String, tag As String)
     If body = shp.Tags("plantuml") And shp.Tags("diagram_type") = tag Then
         Exit Function
     End If
+    
+    shp.Tags.Add "plantuml", body
+    shp.Tags.Add "diagram_type", tag
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -103,8 +114,6 @@ Public Function UpdateDiagram(shp As Shape, body As String, tag As String)
     Dim fname As String
     fname = GenerateDiagram(body, tag, "svg")
     
-    shp.Tags.Add "plantuml", body
-    shp.Tags.Add "diagram_type", tag
     
     SetPicture shp, fname
 Failed:
@@ -140,5 +149,13 @@ Public Sub SetPicture(shp As Shape, fname As String)
     
     shp.width = w * scaleX
     shp.height = h * scaleY
+End Sub
 
+Sub PlantUMLBtn_GetEnabled(control As IRibbonControl, ByRef returnedVal)
+    On Error Resume Next
+    returnedVal = Not Application.ActiveWindow.View.Slide Is Nothing
+End Sub
+
+Sub PlantUMLEdit_GetVisible(control As IRibbonControl, ByRef returnedVal)
+    returnedVal = ActiveWindow.Selection.ShapeRange.Count = 1 And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > ""
 End Sub
