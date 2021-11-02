@@ -1,7 +1,7 @@
 Attribute VB_Name = "PlantUml"
 Private controller As New UIController
 
-Property Get Editor()
+Property Get Editor() As PlantUMLEdit
     Static obj As PlantUMLEdit
     If obj Is Nothing Then
         Set obj = New PlantUMLEdit
@@ -63,7 +63,6 @@ End Function
 
 
 Public Sub InsertDiagram()
-    On Error GoTo Failed
     Dim sld As Slide
     Dim shp As Shape
     Set sld = Application.ActiveWindow.View.Slide
@@ -73,17 +72,15 @@ Public Sub InsertDiagram()
     shp.Line.Visible = msoFalse
     shp.Tags.Add "plantuml", ""
     shp.Tags.Add "diagram_type", "uml"
-    Editor.Hidden = False
-    shp.Select
-Failed:
-
+    
+    Editor.Edit shp
 End Sub
 
 Public Sub EditDiagram()
-    If ActiveWindow.Selection.ShapeRange.Count = 0 Then
+    If ActiveWindow.Selection.ShapeRange.Count <> 1 Then
         Exit Sub
     End If
-    Editor.Show
+    Editor.Edit
 End Sub
 
 Function GetScale(orig As String, current As Single) As Single

@@ -11,7 +11,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    TypeInfoVer     =   93
 End
 Attribute VB_Name = "PlantUMLEdit"
-Attribute VB_Base = "0{4D81A2E8-D919-48B6-85F7-481A6429260D}{D82CBFC3-4044-4614-8FF9-25C1420FC4F8}"
+Attribute VB_Base = "0{EED7A077-936A-4B57-9167-37564FA5DBA3}{D765CBC1-2154-4616-AAEA-79547FFA068F}"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -19,8 +19,9 @@ Attribute VB_Exposed = False
 Attribute VB_TemplateDerived = False
 Attribute VB_Customizable = False
 
-Public Hidden As Boolean
 
+Public Hidden As Boolean
+Private Focus As Boolean
 Private Target As Shape
 Private WithEvents oFormResize As UserFormResizer
 Attribute oFormResize.VB_VarHelpID = -1
@@ -35,12 +36,13 @@ On Error GoTo Failed
             And ActiveWindow.Selection.ShapeRange.Count = 1 _
             And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > "" Then
 
-        UserForm_Initialize
         If Left <> 0 Then
             StartUpPosition = 0
         End If
-        Show
-        Target.Select
+        
+        ShowWindow Focus
+        Focus = False
+        
         Exit Sub
     End If
 Failed:
@@ -74,6 +76,7 @@ Private Sub Code_Change()
     UpdateDiagram
 End Sub
 
+
 Private Sub JarLocationTextBox_Enter()
     BrowseForJarButton.SetFocus
     BrowseForJarButton_Click
@@ -86,7 +89,14 @@ End Sub
 
 Private Sub UserForm_Activate()
     Hidden = False
+    
+    On Error Resume Next
+    Set Target = ActiveWindow.Selection.ShapeRange(1)
+    TypeCombo.Text = Target.Tags("diagram_type")
+    Code.Text = Target.Tags("plantuml")
+    Code.SelStart = 0
 End Sub
+
 
 Private Sub UserForm_Initialize()
     Initializing = True
@@ -100,29 +110,20 @@ Private Sub UserForm_Initialize()
     
     JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
     
-    If oFormResize Is Nothing Then
-        Set oFormResize = New UserFormResizer
-        Set oFormResize.ResizableForm = Me
-    End If
+    Set oFormResize = New UserFormResizer
+    Set oFormResize.ResizableForm = Me
     
     If Dir(JarLocationTextBox.Text) = "" Then
         BrowseForJarButton_Click
     End If
     
-On Error GoTo Failed
-    Set Target = ActiveWindow.Selection.ShapeRange(1)
-    TypeCombo.Text = Target.Tags("diagram_type")
-    Code.Text = Target.Tags("plantuml")
-    Code.SelStart = 0
-    Code.SetFocus
-Failed:
     Initializing = False
 End Sub
 
 Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
     With Code
         .width = .width + X
-        .height = .height + Y
+        .Height = .Height + Y
     End With
     
     AlignBottom JarLocationLabel, Y
@@ -153,5 +154,28 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If CloseMode <> vbFormCode Then
         Cancel = 1
         CancelButton_Click
+    End If
+End Sub
+
+Private Sub ShowWindow(Optional Focus As Boolean = True)
+    UserForm_Activate
+        
+    Show
+    TypeCombo.SetFocus
+    Code.SetFocus
+    
+    If Not Focus Then
+        Target.Select
+    End If
+End Sub
+
+Public Sub Edit(Optional shp As Shape)
+    
+    If shp Is Nothing Then
+        ShowWindow
+    Else
+        Focus = True
+        Hidden = False
+        shp.Select
     End If
 End Sub

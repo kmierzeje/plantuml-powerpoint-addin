@@ -74,6 +74,7 @@ Private Sub AddResizeControls()
         .SpecialEffect = fmSpecialEffectFlat
         .MousePointer = fmMousePointerSizeNWSE
         .ZOrder 0
+        .TabStop = False
         .width = 15
         .height = 15
     End With
@@ -97,6 +98,7 @@ Private Sub AddResizeControls()
         .SpecialEffect = fmSpecialEffectFlat
         .MousePointer = fmMousePointerSizeWE
         .ZOrder 0
+        .TabStop = False
         .width = 2
         .Top = 0
     End With
@@ -104,6 +106,7 @@ Private Sub AddResizeControls()
     With frResizerBottom
         .SpecialEffect = fmSpecialEffectFlat
         .MousePointer = fmMousePointerSizeNS
+        .TabStop = False
         .ZOrder 0
         .height = 2
         .Left = 0
