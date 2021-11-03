@@ -10,21 +10,20 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 1. Click the button to insert a new Diagram. A window will popup:
 
-   ![obraz](https://user-images.githubusercontent.com/66111032/138903516-b9b9330d-c9b6-4e63-9249-b7bf92554192.png)
+   ![obraz](https://user-images.githubusercontent.com/66111032/139954968-5902aad0-9a7d-43ed-89d0-b302d3d0248d.png)
 
-2. When using for the first time, use the `Jar Location` box to enter the location of `plantuml.jar`.
+2. When using for the first time, use the `Jar location` box to enter the location of `plantuml.jar`.
 3. Edit your diagram.
-4. Select `Live updates` if you want to see your diagram updated while you type.
-5. Close the window after finished editing.
-6. If you want to update your diagram, open the context menu and select `Edit PlantUML`:
+4. Close the window after finished editing.
+5. If you want to update your diagram, open the context menu and select `Edit PlantUML`:
 
    ![obraz](https://user-images.githubusercontent.com/66111032/138904193-a8c70b1b-b9e8-4f72-8b4d-1e46c42c3af1.png)
    
-7. The diagram editor window will popup again.
+6. The diagram editor window will popup again.
 
 ## Download
 
-[PlantUml PowerPoint Add-in 1.0](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.0/PlantUml.ppam)
+[PlantUml PowerPoint Add-in 1.1](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.1/PlantUml.ppam)
 
 ## Install
 
