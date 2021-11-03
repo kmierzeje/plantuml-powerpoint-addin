@@ -97,6 +97,7 @@ Public Function UpdateDiagram(shp As Shape, body As String, tag As String)
     On Error GoTo Failed
     UpdateDiagram = False
     
+    body = Replace(body, vbCr, "")
     
     If body = shp.Tags("plantuml") And shp.Tags("diagram_type") = tag Then
         Exit Function
