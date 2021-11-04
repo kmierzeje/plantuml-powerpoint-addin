@@ -89,17 +89,20 @@ End Sub
 
 Private Sub UserForm_Activate()
     Hidden = False
+    Initializing = True
     
     On Error Resume Next
     Set Target = ActiveWindow.Selection.ShapeRange(1)
     TypeCombo.Text = Target.Tags("diagram_type")
     Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
+    
+    Initializing = False
 End Sub
 
 
 Private Sub UserForm_Initialize()
-    Initializing = True
+    
     
     Set App = Application
     
@@ -117,7 +120,7 @@ Private Sub UserForm_Initialize()
         BrowseForJarButton_Click
     End If
     
-    Initializing = False
+    
 End Sub
 
 Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
