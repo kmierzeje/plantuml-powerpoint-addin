@@ -11,13 +11,14 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    TypeInfoVer     =   93
 End
 Attribute VB_Name = "PlantUMLEdit"
-Attribute VB_Base = "0{EED7A077-936A-4B57-9167-37564FA5DBA3}{D765CBC1-2154-4616-AAEA-79547FFA068F}"
+Attribute VB_Base = "0{17C463E1-DDBC-4909-9F38-832D32AA2A81}{E0193FC7-C9E4-49DD-89A6-0C928B3CF82B}"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Attribute VB_TemplateDerived = False
 Attribute VB_Customizable = False
+
 
 
 Public Hidden As Boolean
@@ -124,23 +125,31 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
-    With Code
-        .width = .width + X
-        .Height = .Height + Y
-    End With
-    
-    AlignBottom JarLocationLabel, Y
-    AlignBottom JarLocationTextBox, Y
-    AlignBottom BrowseForJarButton, Y
-    AlignBottom EndLabel, Y
-    
+    Dim Control As Control
+    For Each Control In Controls
+        Dim Tag
+        With Control
+            For Each Tag In Split(.Tag, ",")
+                Select Case Tag
+                Case "width"
+                    .Width = .Width + X
+                Case "height"
+                    .Height = .Height + Y
+                Case "bottom"
+                    .Top = .Top + Y
+                Case "right"
+                    .Left = .Left + X
+                End Select
+            Next
+        End With
+    Next
 End Sub
 
-Private Sub AlignBottom(ctl As control, ByVal Y As Single)
+Private Sub AlignBottom(ctl As Control, ByVal Y As Single)
     ctl.Top = ctl.Top + Y
 End Sub
 
-Private Sub AlignRight(ctl As control, ByVal X As Single)
+Private Sub AlignRight(ctl As Control, ByVal X As Single)
     ctl.Left = ctl.Left + X
 End Sub
 
