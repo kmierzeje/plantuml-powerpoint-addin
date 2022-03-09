@@ -8,7 +8,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    ClientWidth     =   11415
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
-   TypeInfoVer     =   93
+   TypeInfoVer     =   105
 End
 Attribute VB_Name = "PlantUMLEdit"
 Attribute VB_Base = "0{17C463E1-DDBC-4909-9F38-832D32AA2A81}{E0193FC7-C9E4-49DD-89A6-0C928B3CF82B}"
@@ -55,16 +55,16 @@ Private Sub BrowseForJarButton_Click()
     JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
 End Sub
 
-Private Sub UpdateDiagram()
+Private Sub UpdateDiagram(Optional Force As Boolean = False)
     If Initializing Then
         Exit Sub
     End If
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text)
+        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, Force)
         DoEvents
-    Loop While continue
+    Loop While continue And Not Force
     WorkingLabel.Caption = ""
 End Sub
 
@@ -77,6 +77,11 @@ Private Sub Code_Change()
     UpdateDiagram
 End Sub
 
+
+Private Sub FormatCombo_Change()
+    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.Text
+    UpdateDiagram True
+End Sub
 
 Private Sub JarLocationTextBox_Enter()
     BrowseForJarButton.SetFocus
@@ -104,7 +109,7 @@ End Sub
 
 Private Sub UserForm_Initialize()
     
-    
+    Initializing = True
     Set App = Application
     
     TypeCombo.AddItem "uml"
@@ -112,7 +117,11 @@ Private Sub UserForm_Initialize()
     TypeCombo.AddItem "mindmap"
     TypeCombo.AddItem "wbs"
     
+    FormatCombo.AddItem "svg"
+    FormatCombo.AddItem "png"
+    
     JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
+    FormatCombo.Text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
     
     Set oFormResize = New UserFormResizer
     Set oFormResize.ResizableForm = Me
@@ -173,6 +182,7 @@ Private Sub ShowWindow(Optional Focus As Boolean = True)
     UserForm_Activate
         
     Show
+    
     TypeCombo.SetFocus
     Code.SetFocus
     

@@ -93,13 +93,13 @@ Function GetScale(orig As String, current As Single) As Single
 End Function
 
 
-Public Function UpdateDiagram(shp As Shape, body As String, tag As String)
+Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optional Force As Boolean = False)
     On Error GoTo Failed
     UpdateDiagram = False
     
     body = Replace(body, vbCr, "")
     
-    If body = shp.Tags("plantuml") And shp.Tags("diagram_type") = tag Then
+    If Not Force And body = shp.Tags("plantuml") And shp.Tags("diagram_type") = Tag Then
         Exit Function
     End If
     
@@ -113,10 +113,12 @@ Public Function UpdateDiagram(shp As Shape, body As String, tag As String)
     UpdateDiagram = True
     
     Dim fname As String
-    fname = GenerateDiagram(body, tag, "svg")
     
+    Dim format As String
+    format = GetSetting("PlantUML_Plugin", "Settings", "Format")
+    fname = GenerateDiagram(body, Tag, format)
     
-    SetPicture shp, fname
+    SetPicture shp, fname, format
 Failed:
 
 End Function
@@ -130,26 +132,34 @@ Function Maximum(v1 As Single, v2 As Single)
     End If
 End Function
 
-Public Sub SetPicture(shp As Shape, fname As String)
+Public Sub SetPicture(shp As Shape, fname As String, format As String)
     shp.Fill.UserPicture (fname)
     
-    Set svg = CreateObject("Msxml2.DOMDocument")
-    svg.Load fname
-    Kill fname
-    
     Dim w As Single, h As Single, scaleX As Single, scaleY As Single
-    
     scaleX = GetScale(shp.Tags("orig_width"), shp.width)
     scaleY = GetScale(shp.Tags("orig_height"), shp.height)
     
-    w = Val(svg.SelectSingleNode("/svg/@width").text)
-    h = Val(svg.SelectSingleNode("/svg/@height").text)
+    If format = "svg" Then
+        Set svg = CreateObject("Msxml2.DOMDocument")
+        svg.Load fname
+    
+        w = Val(svg.SelectSingleNode("/svg/@width").Text)
+        h = Val(svg.SelectSingleNode("/svg/@height").Text)
+    Else
+        Set wia = CreateObject("WIA.ImageFile")
+        wia.LoadFile fname
+        w = wia.Width
+        h = wia.Height
+    End If
+    
     
     shp.Tags.Add "orig_width", w
     shp.Tags.Add "orig_height", h
     
     shp.width = w * scaleX
     shp.height = h * scaleY
+    
+    Kill fname
 End Sub
 
 Sub PlantUMLBtn_GetEnabled(control As IRibbonControl, ByRef returnedVal)
