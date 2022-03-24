@@ -39,6 +39,11 @@ Sub BrowseForJar()
         End With
 End Sub
 
+Function Q(text As String)
+    Q = """" & text & """"
+End Function
+
+
 Function GenerateDiagram(body As String, tag As String, format As String)
     Dim fname As String
     
@@ -50,7 +55,7 @@ Function GenerateDiagram(body As String, tag As String, format As String)
         BrowseForJar
     End If
     
-    SyncShell "java.exe -jar " & JarPath & " -t" & format & " " & fname, vbHide
+    SyncShell "java.exe -jar " & Q(JarPath) & " -t" & format & " " & Q(fname), vbHide
     Kill fname
     fname = Left(fname, InStrRev(fname, ".") - 1) & "." & format
     GenerateDiagram = fname
