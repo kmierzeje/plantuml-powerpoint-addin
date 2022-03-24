@@ -23,7 +23,7 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 ## Download
 
-[PlantUml PowerPoint Add-in 1.2](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.2/PlantUml.ppam)
+[PlantUml PowerPoint Add-in 1.3](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.3/PlantUml.ppam)
 
 ## Install
 
