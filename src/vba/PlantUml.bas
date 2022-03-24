@@ -1,17 +1,12 @@
 Attribute VB_Name = "PlantUml"
 Private controller As New UIController
 
-Property Get Editor() As PlantUMLEdit
-    Static obj As PlantUMLEdit
-    If obj Is Nothing Then
-        Set obj = New PlantUMLEdit
-    End If
-    Set Editor = obj
-End Property
+Function CreateEditor() As PlantUMLEdit
+    Set CreateEditor = New PlantUMLEdit
+End Function
 
 Sub OnLoad(Ribbon As IRibbonUI)
     Set controller.Ribbon = Ribbon
-    Load Editor
 End Sub
 
 Sub SyncShell(ByVal Cmd As String, ByVal WindowStyle As VbAppWinStyle)
@@ -73,14 +68,14 @@ Public Sub InsertDiagram()
     shp.Tags.Add "plantuml", ""
     shp.Tags.Add "diagram_type", "uml"
     
-    Editor.Edit shp
+    CreateEditor().Edit shp
 End Sub
 
 Public Sub EditDiagram()
     If ActiveWindow.Selection.ShapeRange.Count <> 1 Then
         Exit Sub
     End If
-    Editor.Edit
+    CreateEditor().Edit
 End Sub
 
 Function GetScale(orig As String, current As Single) As Single
