@@ -27,8 +27,9 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 ## Install
 
-1. Open PowerPoint
-2. Go to Developer tab and select `PowerPoint Add-ins`.
+1. Make sure you have Java Runtime Environment installed and `java` executable location in `PATH`.
+2. Open PowerPoint.
+3. Go to Developer tab and select `PowerPoint Add-ins`.
 
   ![obraz](https://user-images.githubusercontent.com/66111032/140281173-6eabfb09-08e0-43e4-bdec-d6393fdcc61b.png) 
   
