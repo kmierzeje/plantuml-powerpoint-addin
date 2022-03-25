@@ -43,14 +43,19 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 ## Development and Building
 
-1. Zip the content of `src/PlantUml.pptm` folder to an archive named `PlantUml.pptm`.
-2. Use [VbaSync](https://github.com/chelh/VBASync/releases/tag/v2.2.0) to publish source code from `src/vba` to `PlantUml.pptm` file created in first step.
+### Prerequisites
 
-   ![obraz](https://user-images.githubusercontent.com/66111032/138966925-53df51ad-b8d5-4fd5-9e3f-d200cd44de0e.png)
+- [VBA Sync Tool](https://github.com/chelh/VBASync)
+- [Zip](http://infozip.sourceforge.net/Zip.html)
 
-4. Open `PlantUml.pptm` with PowerPoint.
-5. Now you can use `View Code` button on `Developer` tab to develop the add-in code.
-6. Save As "PowerPoint Add-in" named `PlantUml.ppam`.
-7. Don't forget to extract the code from `Plantuml.pptm` with VbaSync back to `src/vba` and issue a Pull Request.
+### Building
 
+Run `build.bat path/to/target/PlantUml.ppam` in `src` directory.
 
+### Development
+
+1. Run `build.bat path/to/target/PlantUml.pptm` in `src` directory.
+2. Open `path/to/target/PlantUml.pptm` with PowerPoint.
+3. Now you can use `View Code` button on `Developer` tab to develop the add-in code.
+4. In VBA Editor use `File/Export File...` menu to save updated files in `src/vba`. You can also run `VBA Sync Tool` GUI to export your changes.
+5. Don't forget to issue a Pull Request.
