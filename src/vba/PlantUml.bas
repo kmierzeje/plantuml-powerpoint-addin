@@ -1,8 +1,21 @@
 Attribute VB_Name = "PlantUml"
 Private controller As New UIController
+Private editors As Collection
 
 Function CreateEditor() As PlantUMLEdit
+    Dim key As String
+    key = Str(ObjPtr(Application.ActiveWindow))
+    If editors Is Nothing Then
+        Set editors = New Collection
+    End If
+    
+    
+    On Error GoTo CreateNew
+    Set CreateEditor = editors.Item(key)
+    Exit Function
+CreateNew:
     Set CreateEditor = New PlantUMLEdit
+    editors.Add CreateEditor, key
 End Function
 
 Sub OnLoad(Ribbon As IRibbonUI)

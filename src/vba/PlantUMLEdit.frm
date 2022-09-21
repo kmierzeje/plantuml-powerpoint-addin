@@ -21,6 +21,7 @@ Attribute VB_Customizable = False
 
 
 
+Public Parent As Object
 Public Hidden As Boolean
 Private Focus As Boolean
 Private Target As Shape
@@ -31,8 +32,15 @@ Attribute App.VB_VarHelpID = -1
 Private Initializing As Boolean
 
 
+Private Sub App_WindowDeactivate(ByVal Pres As Presentation, ByVal Wn As DocumentWindow)
+    Hide
+End Sub
+
 Private Sub App_WindowSelectionChange(ByVal Sel As Selection)
 On Error GoTo Failed
+    If Not Parent Is ActiveWindow Then
+        Exit Sub
+    End If
     If Not Hidden And ActiveWindow.Selection.Type = ppSelectionShapes _
             And ActiveWindow.Selection.ShapeRange.Count = 1 _
             And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > "" Then
@@ -111,6 +119,7 @@ Private Sub UserForm_Initialize()
     
     Initializing = True
     Set App = Application
+    Set Parent = ActiveWindow
     
     TypeCombo.AddItem "uml"
     TypeCombo.AddItem "gantt"
