@@ -3,14 +3,14 @@
 		<tabs>
                <tab idMso="TabInsert">
                  <group id="PlantUMLGroup" label="PlantUML">
-                   <button id="PlantUMLBtn" label="Insert Diagram" size="large" image="plantuml" onAction="PlantUml.InsertDiagram" getEnabled="PlantUml.PlantUMLBtn_GetEnabled" />
+                   <button id="PlantUMLBtn" label="Diagram" size="large" image="plantuml" onAction="PlantUml.InsertDiagram" getEnabled="PlantUml.PlantUMLBtn_GetEnabled" />
                  </group>
                </tab>
            </tabs>
 	</ribbon>
       <contextMenus>
         <contextMenu idMso="ContextMenuShape">
-          <button id="PlantUMLEdit" label="Edit PlantUML" image="plantuml" onAction="PlantUml.EditDiagram" getVisible="PlantUml.PlantUMLEdit_GetVisible" />
+          <button id="PlantUMLEdit" label="Edit Diagram" image="plantuml" onAction="PlantUml.EditDiagram" getVisible="PlantUml.PlantUMLEdit_GetVisible" />
         </contextMenu>
       </contextMenus>
 </customUI>

@@ -60,7 +60,7 @@ End Sub
 
 Private Sub BrowseForJarButton_Click()
     PlantUml.BrowseForJar
-    JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
+    JarLocationTextBox.text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
 End Sub
 
 Private Sub UpdateDiagram(Optional Force As Boolean = False)
@@ -70,7 +70,7 @@ Private Sub UpdateDiagram(Optional Force As Boolean = False)
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, Force)
+        continue = PlantUml.UpdateDiagram(Target, Code.text, TypeCombo.text, Force)
         DoEvents
     Loop While continue And Not Force
     WorkingLabel.Caption = ""
@@ -87,7 +87,7 @@ End Sub
 
 
 Private Sub FormatCombo_Change()
-    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.Text
+    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.text
     UpdateDiagram True
 End Sub
 
@@ -97,7 +97,7 @@ Private Sub JarLocationTextBox_Enter()
 End Sub
 
 Private Sub TypeCombo_Change()
-    EndLabel.Caption = "@end" & TypeCombo.Text
+    EndLabel.Caption = "@end" & TypeCombo.text
     Code_Change
 End Sub
 
@@ -107,8 +107,8 @@ Private Sub UserForm_Activate()
     
     On Error Resume Next
     Set Target = ActiveWindow.Selection.ShapeRange(1)
-    TypeCombo.Text = Target.Tags("diagram_type")
-    Code.Text = Target.Tags("plantuml")
+    TypeCombo.text = Target.Tags("diagram_type")
+    Code.text = Target.Tags("plantuml")
     Code.SelStart = 0
     
     Initializing = False
@@ -129,13 +129,13 @@ Private Sub UserForm_Initialize()
     FormatCombo.AddItem "svg"
     FormatCombo.AddItem "png"
     
-    JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
-    FormatCombo.Text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
+    JarLocationTextBox.text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
+    FormatCombo.text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
     
     Set oFormResize = New UserFormResizer
     Set oFormResize.ResizableForm = Me
     
-    If Dir(JarLocationTextBox.Text) = "" Then
+    If Dir(JarLocationTextBox.text) = "" Then
         BrowseForJarButton_Click
     End If
     
@@ -150,9 +150,9 @@ Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
             For Each Tag In Split(.Tag, ",")
                 Select Case Tag
                 Case "width"
-                    .Width = .Width + X
+                    .width = .width + X
                 Case "height"
-                    .Height = .Height + Y
+                    .height = .height + Y
                 Case "bottom"
                     .Top = .Top + Y
                 Case "right"
