@@ -1,11 +1,12 @@
-set TARGET=%1
+@echo off
+set TARGET=%~f1
 set EXT=%TARGET:~-4%
 
 del %TARGET%
 pushd PlantUml\common
-zip -r ..\..\%TARGET% .
+zip -r "%TARGET%" .
 popd
 pushd PlantUml\%EXT%
-zip -r ..\..\%TARGET% .
+zip -r "%TARGET%" .
 popd
-"c:\Program Files (x86)\VBA Sync Tool\VBASync.exe" -p -a -r -f %TARGET% -d vba
+"c:\Program Files (x86)\VBA Sync Tool\VBASync.exe" -p -a -r -f "%TARGET%" -d vba
