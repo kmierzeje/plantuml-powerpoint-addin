@@ -112,11 +112,11 @@ Function WriteToTmpBinFile(content() As Byte, format As String)
     Close #fileNo
     WriteToTmpBinFile = FileName
 End Function
-
+    
 Function GetPicowebEndpoint()
     GetPicowebEndpoint = GetSetting("PlantUML_Plugin", "Settings", "PicowebEndpoint")
 End Function
-
+    
 Function GetPicowebAddress()
     Dim endpoint() As String
     endpoint = Split(GetPicowebEndpoint(), ":")
@@ -128,7 +128,7 @@ Function GetPicowebAddress()
         GetPicowebAddress = "http://" & endpoint(1) & ":" & endpoint(0)
     End If
 End Function
-
+    
 Function GetHttpServerAddress()
     GetHttpServerAddress = GetPicowebAddress()
     
@@ -168,17 +168,15 @@ Function GenerateDiagramHttp(body As String, Tag As String, format As String)
     
     StartServer
     
-    Dim WinHttpReq As WinHttp.WinHttpRequest
-    Set WinHttpReq = New WinHttpRequest
+    Dim WinHttpReq As Object
+    Set WinHttpReq = VBA.CreateObject("WinHttp.WinHttpRequest.5.1")
         
     WinHttpReq.Open "GET", GetHttpServerAddress() & "/plantuml/" & format & "/~h" & StringToHex(request), True
     WinHttpReq.Send
     WinHttpReq.WaitForResponse
-    'While WinHttpReq.WaitForResponse(0) = False
-    '    DoEvents
-    'Wend
-        
-    GenerateDiagramHttp = WriteToTmpBinFile(WinHttpReq.ResponseBody, format)
+    Dim response() as Byte
+    response = WinHttpReq.ResponseBody
+    GenerateDiagramHttp = WriteToTmpBinFile(response, format)
 End Function
 
 Function GenerateDiagramCmd(body As String, Tag As String, format As String)
@@ -225,7 +223,7 @@ End Function
 
 
 Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optional Force As Boolean = False)
-    'On Error GoTo Failed
+    On Error GoTo Failed
     UpdateDiagram = False
     
     body = Replace(body, vbCr, "")
@@ -235,7 +233,7 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optio
     End If
     
     shp.Tags.Add "plantuml", body
-    shp.Tags.Add "diagram_type", Tag
+    shp.Tags.Add "diagram_type", tag
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -250,8 +248,9 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optio
     fname = GenerateDiagram(body, Tag, format)
     
     SetPicture shp, fname, format
+    Exit Function
 Failed:
-
+    MsgBox Err.Description, vbCritical, "PlantUml", Err.HelpFile, Err.HelpContext
 End Function
 
 
@@ -279,8 +278,8 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     Else
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
-        w = wia.width
-        h = wia.height
+        w = wia.Width
+        h = wia.Height
     End If
     
     
@@ -293,11 +292,11 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     Kill fname
 End Sub
 
-Sub PlantUMLBtn_GetEnabled(Control As IRibbonControl, ByRef returnedVal)
+Sub PlantUMLBtn_GetEnabled(control As IRibbonControl, ByRef returnedVal)
     On Error Resume Next
     returnedVal = Not Application.ActiveWindow.View.Slide Is Nothing
 End Sub
 
-Sub PlantUMLEdit_GetVisible(Control As IRibbonControl, ByRef returnedVal)
+Sub PlantUMLEdit_GetVisible(control As IRibbonControl, ByRef returnedVal)
     returnedVal = ActiveWindow.Selection.ShapeRange.Count = 1 And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > ""
 End Sub
