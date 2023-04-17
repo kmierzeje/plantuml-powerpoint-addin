@@ -32,6 +32,10 @@ Attribute App.VB_VarHelpID = -1
 Private Initializing As Boolean
 
 
+Private Sub App_PresentationCloseFinal(ByVal Pres As Presentation)
+    PlantUml.StopServer
+End Sub
+
 Private Sub App_WindowDeactivate(ByVal Pres As Presentation, ByVal Wn As DocumentWindow)
     Hide
 End Sub
