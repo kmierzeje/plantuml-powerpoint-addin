@@ -10,10 +10,13 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 1. Click the button to insert a new Diagram. A window will popup:
 
-   ![obraz](https://user-images.githubusercontent.com/66111032/139954968-5902aad0-9a7d-43ed-89d0-b302d3d0248d.png)
+   ![image](https://user-images.githubusercontent.com/66111032/232824935-d4c97534-db0d-4233-9dc8-8e872b340a5c.png)
 
-2. When using for the first time, use the `Jar location` box to enter the location of `plantuml.jar`.
-3. Edit your diagram.
+2. Edit your diagram.
+3. Your input is sent to https://www.plantuml.com for rendering. If you want to use different server, type the address in the `PlantUML Server` box. You can also use local `plantuml.jar` server to render your diagrams, just locate the jar file using `Browse for 'plantuml.jar'` option.
+
+   ![image](https://user-images.githubusercontent.com/66111032/232826162-c51b0607-b90b-412a-8843-65c969d14f28.png)
+
 4. Close the window after finished editing.
 5. If you want to update your diagram, open the context menu and select `Edit PlantUML`:
 
@@ -23,13 +26,12 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 ## Download
 
-[PlantUml PowerPoint Add-in 1.3](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.3/PlantUml.ppam)
+[PlantUml PowerPoint Add-in 1.4](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.4/PlantUml.ppam)
 
 ## Install
 
-1. Make sure you have Java Runtime Environment installed and `java` executable location in `PATH`.
-2. Open PowerPoint.
-3. Go to Developer tab and select `PowerPoint Add-ins`.
+1. Open PowerPoint.
+2. Go to Developer tab and select `PowerPoint Add-ins`.
 
   ![obraz](https://user-images.githubusercontent.com/66111032/140281173-6eabfb09-08e0-43e4-bdec-d6393fdcc61b.png) 
   
