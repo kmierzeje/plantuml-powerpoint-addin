@@ -8,7 +8,6 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    ClientWidth     =   11415
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
-   TypeInfoVer     =   105
 End
 Attribute VB_Name = "PlantUMLEdit"
 Attribute VB_Base = "0{17C463E1-DDBC-4909-9F38-832D32AA2A81}{E0193FC7-C9E4-49DD-89A6-0C928B3CF82B}"
@@ -62,11 +61,6 @@ Failed:
     Hide
 End Sub
 
-Private Sub BrowseForJarButton_Click()
-    PlantUml.BrowseForJar
-    JarLocationTextBox.text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
-End Sub
-
 Private Sub UpdateDiagram(Optional Force As Boolean = False)
     If Initializing Then
         Exit Sub
@@ -74,7 +68,7 @@ Private Sub UpdateDiagram(Optional Force As Boolean = False)
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.text, TypeCombo.text, Force)
+        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, Force)
         DoEvents
     Loop While continue And Not Force
     WorkingLabel.Caption = ""
@@ -91,31 +85,72 @@ End Sub
 
 
 Private Sub FormatCombo_Change()
-    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.text
+    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.Text
     UpdateDiagram True
 End Sub
 
-Private Sub JarLocationTextBox_Enter()
-    BrowseForJarButton.SetFocus
-    BrowseForJarButton_Click
+Private Sub ServerComboBox_Change()
+    If Initializing Then
+        Exit Sub
+    End If
+    
+    If ServerComboBox.ListIndex = -1 Then
+        PlantUml.SetRemoteHttpAddress ServerComboBox.Value
+        Exit Sub
+    ElseIf ServerComboBox.ListIndex = 0 Then
+        PlantUml.SetRemoteHttpAddress ServerComboBox.Value
+        PlantUml.SetJarPath ""
+    ElseIf ServerComboBox.ListIndex < ServerComboBox.ListCount - 1 Then
+        PlantUml.SetJarPath ServerComboBox.Value
+    Else
+        PlantUml.BrowseForJar
+    End If
+    
+    SetupServerCombo
 End Sub
 
 Private Sub TypeCombo_Change()
-    EndLabel.Caption = "@end" & TypeCombo.text
+    EndLabel.Caption = "@end" & TypeCombo.Text
     Code_Change
+End Sub
+
+Private Sub SetupServerCombo()
+    Initializing = True
+    Dim LocalJarPath As String
+    
+    ServerComboBox.Clear
+    ServerComboBox.AddItem PlantUml.GetRemoteHttpAddress()
+    
+    LocalJarPath = PlantUml.GetJarPath(False)
+    If LocalJarPath > "" Then
+        ServerComboBox.AddItem LocalJarPath
+        ServerComboBox.Value = LocalJarPath
+        ServerComboBox.Style = fmStyleDropDownList
+    Else
+        ServerComboBox.Value = PlantUml.GetRemoteHttpAddress()
+        ServerComboBox.Style = fmStyleDropDownCombo
+    End If
+    ServerComboBox.AddItem "Browse for 'plantuml.jar'..."
+    
+    MeasureTextBox.Text = ServerComboBox.Value
+    If MeasureTextBox.Width > ServerComboBox.Width - 16 Then
+        ServerComboBox.ControlTipText = ServerComboBox.Value
+    Else
+        ServerComboBox.ControlTipText = ""
+    End If
+    Initializing = False
 End Sub
 
 Private Sub UserForm_Activate()
     Hidden = False
+    SetupServerCombo
     Initializing = True
-    
-    JarLocationTextBox.Text = GetSetting("PlantUML_Plugin", "Settings", "JarPath")
     FormatCombo.Text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
     
     On Error Resume Next
     Set Target = ActiveWindow.Selection.ShapeRange(1)
-    TypeCombo.text = Target.Tags("diagram_type")
-    Code.text = Target.Tags("plantuml")
+    TypeCombo.Text = Target.Tags("diagram_type")
+    Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
     
     Initializing = False
@@ -152,7 +187,7 @@ Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
             For Each Tag In Split(.Tag, ",")
                 Select Case Tag
                 Case "width"
-                    .width = .width + X
+                    .Width = .Width + X
                 Case "height"
                     .height = .height + Y
                 Case "bottom"
@@ -213,6 +248,3 @@ Public Sub Edit(Optional shp As Shape)
     End If
 End Sub
 
-Private Sub UserForm_Terminate()
-    PlantUml.StopServer
-End Sub

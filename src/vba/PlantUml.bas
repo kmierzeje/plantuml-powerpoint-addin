@@ -67,10 +67,15 @@ Function GetJarPath(Optional Interactive As Boolean = True)
     End If
 End Function
 
+Sub SetJarPath(path As String)
+    SaveSetting "PlantUML_Plugin", "Settings", "JarPath", path
+End Sub
+
 Function BrowseForJar()
     With Application.FileDialog(msoFileDialogOpen)
             .AllowMultiSelect = False
             .Title = "Path to plantuml.jar"
+            .Filters.Clear
             .Filters.Add "Jar Files", "*.jar", 1
             .InitialFileName = GetJarPath(False)
             .Show
@@ -78,7 +83,7 @@ Function BrowseForJar()
                 Exit Function
             End If
             BrowseForJar = .SelectedItems(1)
-            SaveSetting "PlantUML_Plugin", "Settings", "JarPath", .SelectedItems(1)
+            SetJarPath .SelectedItems(1)
         End With
 End Function
 
@@ -113,8 +118,10 @@ Function WriteToTmpBinFile(content() As Byte, format As String)
     WriteToTmpBinFile = FileName
 End Function
     
-Function GetPicowebEndpoint()
-    GetPicowebEndpoint = GetSetting("PlantUML_Plugin", "Settings", "PicowebEndpoint")
+Function GetPicowebEndpoint() As String
+    If GetJarPath(False) > "" Then
+        GetPicowebEndpoint = GetSetting("PlantUML_Plugin", "Settings", "PicowebEndpoint", "8880")
+    End If
 End Function
     
 Function GetPicowebAddress()
@@ -133,8 +140,16 @@ Function GetHttpServerAddress()
     GetHttpServerAddress = GetPicowebAddress()
     
     If GetHttpServerAddress = "" Then
-        GetHttpServerAddress = GetSetting("PlantUML_Plugin", "Settings", "HttpServerAddress", "https://www.plantuml.com")
+        GetHttpServerAddress = GetRemoteHttpAddress()
     End If
+End Function
+
+Function GetRemoteHttpAddress()
+    GetRemoteHttpAddress = GetSetting("PlantUML_Plugin", "Settings", "HttpServerAddress", "https://www.plantuml.com")
+End Function
+
+Function SetRemoteHttpAddress(address As String)
+    SaveSetting "PlantUML_Plugin", "Settings", "HttpServerAddress", address
 End Function
 
 Public Sub StartServer()
@@ -174,7 +189,7 @@ Function GenerateDiagramHttp(body As String, Tag As String, format As String)
     WinHttpReq.Open "GET", GetHttpServerAddress() & "/plantuml/" & format & "/~h" & StringToHex(request), True
     WinHttpReq.Send
     WinHttpReq.WaitForResponse
-    Dim response() as Byte
+    Dim response() As Byte
     response = WinHttpReq.ResponseBody
     GenerateDiagramHttp = WriteToTmpBinFile(response, format)
 End Function
@@ -233,7 +248,7 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optio
     End If
     
     shp.Tags.Add "plantuml", body
-    shp.Tags.Add "diagram_type", tag
+    shp.Tags.Add "diagram_type", Tag
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -266,7 +281,7 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     shp.Fill.UserPicture (fname)
     
     Dim w As Single, h As Single, scaleX As Single, scaleY As Single
-    scaleX = GetScale(shp.Tags("orig_width"), shp.width)
+    scaleX = GetScale(shp.Tags("orig_width"), shp.Width)
     scaleY = GetScale(shp.Tags("orig_height"), shp.height)
     
     If format = "svg" Then
@@ -279,24 +294,24 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
         w = wia.Width
-        h = wia.Height
+        h = wia.height
     End If
     
     
     shp.Tags.Add "orig_width", w
     shp.Tags.Add "orig_height", h
     
-    shp.width = w * scaleX
+    shp.Width = w * scaleX
     shp.height = h * scaleY
     
     Kill fname
 End Sub
 
-Sub PlantUMLBtn_GetEnabled(control As IRibbonControl, ByRef returnedVal)
+Sub PlantUMLBtn_GetEnabled(Control As IRibbonControl, ByRef returnedVal)
     On Error Resume Next
     returnedVal = Not Application.ActiveWindow.View.Slide Is Nothing
 End Sub
 
-Sub PlantUMLEdit_GetVisible(control As IRibbonControl, ByRef returnedVal)
+Sub PlantUMLEdit_GetVisible(Control As IRibbonControl, ByRef returnedVal)
     returnedVal = ActiveWindow.Selection.ShapeRange.Count = 1 And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > ""
 End Sub
