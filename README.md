@@ -1,6 +1,6 @@
 # plantuml-powerpoint-addin
 
-This add-in allows to embed PlantUml diagrams in PowerPoint presentations.
+This add-in allows to embed PlantUML diagrams in PowerPoint presentations.
 
 ## Usage
 
@@ -26,7 +26,7 @@ The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button in
 
 ## Download
 
-[PlantUml PowerPoint Add-in 1.4](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.4/PlantUml.ppam)
+[PlantUML PowerPoint Add-in 1.4](https://github.com/kmierzeje/plantuml-powerpoint-addin/releases/download/v1.4/PlantUml.ppam)
 
 ## Install
 
