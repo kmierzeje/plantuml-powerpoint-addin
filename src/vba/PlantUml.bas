@@ -281,7 +281,7 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     shp.Fill.UserPicture (fname)
     
     Dim w As Single, h As Single, scaleX As Single, scaleY As Single
-    scaleX = GetScale(shp.Tags("orig_width"), shp.Width)
+    scaleX = GetScale(shp.Tags("orig_width"), shp.width)
     scaleY = GetScale(shp.Tags("orig_height"), shp.height)
     
     If format = "svg" Then
@@ -293,7 +293,7 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     Else
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
-        w = wia.Width
+        w = wia.width
         h = wia.height
     End If
     
@@ -301,7 +301,7 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     shp.Tags.Add "orig_width", w
     shp.Tags.Add "orig_height", h
     
-    shp.Width = w * scaleX
+    shp.width = w * scaleX
     shp.height = h * scaleY
     
     Kill fname
@@ -313,5 +313,11 @@ Sub PlantUMLBtn_GetEnabled(Control As IRibbonControl, ByRef returnedVal)
 End Sub
 
 Sub PlantUMLEdit_GetVisible(Control As IRibbonControl, ByRef returnedVal)
-    returnedVal = ActiveWindow.Selection.ShapeRange.Count = 1 And ActiveWindow.Selection.ShapeRange(1).Tags("diagram_type") > ""
+    returnedVal = GetSelectedShape().Tags("diagram_type") > ""
 End Sub
+
+
+Public Function GetSelectedShape()
+    Set GetSelectedShape = ActiveWindow.Selection.TextRange.Parent.Parent.Item(1)
+End Function
+

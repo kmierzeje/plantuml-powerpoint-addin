@@ -133,7 +133,7 @@ Private Sub SetupServerCombo()
     ServerComboBox.AddItem "Browse for 'plantuml.jar'..."
     
     MeasureTextBox.Text = ServerComboBox.Value
-    If MeasureTextBox.Width > ServerComboBox.Width - 16 Then
+    If MeasureTextBox.width > ServerComboBox.width - 16 Then
         ServerComboBox.ControlTipText = ServerComboBox.Value
     Else
         ServerComboBox.ControlTipText = ""
@@ -148,7 +148,7 @@ Private Sub UserForm_Activate()
     FormatCombo.Text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
     
     On Error Resume Next
-    Set Target = ActiveWindow.Selection.ShapeRange(1)
+    Set Target = PlantUml.GetSelectedShape()
     TypeCombo.Text = Target.Tags("diagram_type")
     Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
@@ -187,7 +187,7 @@ Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
             For Each Tag In Split(.Tag, ",")
                 Select Case Tag
                 Case "width"
-                    .Width = .Width + X
+                    .width = .width + X
                 Case "height"
                     .height = .height + Y
                 Case "bottom"
