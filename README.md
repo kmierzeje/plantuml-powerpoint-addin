@@ -2,6 +2,8 @@
 
 This add-in allows to embed PlantUML diagrams in PowerPoint presentations.
 
+**Windows only. Mac is not supported.**
+
 ## Usage
 
 The add-in adds `PlantUML` group to `Insert Tab` with `Insert Diagram` button inside:
