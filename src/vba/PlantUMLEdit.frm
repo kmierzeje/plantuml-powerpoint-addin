@@ -68,7 +68,7 @@ Private Sub UpdateDiagram(Optional Force As Boolean = False)
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, Force)
+        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, ThemeCombo.Text, Force)
         DoEvents
     Loop While continue And Not Force
     WorkingLabel.Caption = ""
@@ -107,6 +107,10 @@ Private Sub ServerComboBox_Change()
     End If
     
     SetupServerCombo
+End Sub
+
+Private Sub ThemeCombo_Change()
+    Code_Change
 End Sub
 
 Private Sub TypeCombo_Change()
@@ -150,6 +154,7 @@ Private Sub UserForm_Activate()
     On Error Resume Next
     Set Target = PlantUml.GetSelectedShape()
     TypeCombo.Text = Target.Tags("diagram_type")
+    ThemeCombo.Text = Target.Tags("theme")
     Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
     
@@ -171,6 +176,50 @@ Private Sub UserForm_Initialize()
     FormatCombo.AddItem "svg"
     FormatCombo.AddItem "png"
     
+    ThemeCombo.AddItem ""
+    ThemeCombo.AddItem "amiga"
+    ThemeCombo.AddItem "aws-orange"
+    ThemeCombo.AddItem "black-knight"
+    ThemeCombo.AddItem "bluegray"
+    ThemeCombo.AddItem "blueprint"
+    ThemeCombo.AddItem "carbon-gray"
+    ThemeCombo.AddItem "cerulean"
+    ThemeCombo.AddItem "cerulean-outline"
+    ThemeCombo.AddItem "cloudscape-design"
+    ThemeCombo.AddItem "crt-amber"
+    ThemeCombo.AddItem "crt-green"
+    ThemeCombo.AddItem "cyborg"
+    ThemeCombo.AddItem "cyborg-outline"
+    ThemeCombo.AddItem "hacker"
+    ThemeCombo.AddItem "lightgray"
+    ThemeCombo.AddItem "mars"
+    ThemeCombo.AddItem "materia"
+    ThemeCombo.AddItem "materia-outline"
+    ThemeCombo.AddItem "metal"
+    ThemeCombo.AddItem "mimeograph"
+    ThemeCombo.AddItem "minty"
+    ThemeCombo.AddItem "mono"
+    ThemeCombo.AddItem "plain"
+    ThemeCombo.AddItem "reddress-darkblue"
+    ThemeCombo.AddItem "reddress-darkgreen"
+    ThemeCombo.AddItem "reddress-darkorange"
+    ThemeCombo.AddItem "reddress-darkred"
+    ThemeCombo.AddItem "reddress-lightblue"
+    ThemeCombo.AddItem "reddress-lightgreen"
+    ThemeCombo.AddItem "reddress-lightorange"
+    ThemeCombo.AddItem "reddress-lightred"
+    ThemeCombo.AddItem "sandstone"
+    ThemeCombo.AddItem "silver"
+    ThemeCombo.AddItem "sketchy"
+    ThemeCombo.AddItem "sketchy-outline"
+    ThemeCombo.AddItem "spacelab"
+    ThemeCombo.AddItem "spacelab-white"
+    ThemeCombo.AddItem "sunlust"
+    ThemeCombo.AddItem "superhero"
+    ThemeCombo.AddItem "superhero-outline"
+    ThemeCombo.AddItem "toy"
+    ThemeCombo.AddItem "united"
+    ThemeCombo.AddItem "vibrant"
     
     Set oFormResize = New UserFormResizer
     Set oFormResize.ResizableForm = Me

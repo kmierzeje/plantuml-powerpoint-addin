@@ -169,18 +169,15 @@ Public Sub StopServer()
     Set PlantServer = Nothing
 End Sub
 
-Function GenerateDiagram(body As String, Tag As String, format As String)
+Function GenerateDiagram(request As String, format As String)
     If GetJarPath(False) > "" And GetPicowebEndpoint() = "" Then
-        GenerateDiagram = GenerateDiagramCmd(body, Tag, format)
+        GenerateDiagram = GenerateDiagramCmd(request, format)
     Else
-        GenerateDiagram = GenerateDiagramHttp(body, Tag, format)
+        GenerateDiagram = GenerateDiagramHttp(request, format)
     End If
 End Function
 
-Function GenerateDiagramHttp(body As String, Tag As String, format As String)
-    Dim request As String
-    request = "@start" & Tag & vbNewLine & body & vbNewLine & "@end" & Tag
-    
+Function GenerateDiagramHttp(request As String, format As String)
     StartServer
     
     Dim WinHttpReq As Object
@@ -194,10 +191,10 @@ Function GenerateDiagramHttp(body As String, Tag As String, format As String)
     GenerateDiagramHttp = WriteToTmpBinFile(response, format)
 End Function
 
-Function GenerateDiagramCmd(body As String, Tag As String, format As String)
+Function GenerateDiagramCmd(request As String, format As String)
     Dim fname As String
     
-    fname = WriteToTmpFile("@start" & Tag & vbNewLine & body & vbNewLine & "@end" & Tag)
+    fname = WriteToTmpFile(request)
     
     SyncShell "java.exe -jar " & Q(GetJarPath()) & " -t" & format & " " & Q(fname), vbHide
     Kill fname
@@ -237,18 +234,19 @@ Function GetScale(orig As String, current As Single) As Single
 End Function
 
 
-Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optional Force As Boolean = False)
+Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme As String, Optional Force As Boolean = False)
     On Error GoTo Failed
     UpdateDiagram = False
     
     body = Replace(body, vbCr, "")
     
-    If Not Force And body = shp.Tags("plantuml") And shp.Tags("diagram_type") = Tag Then
+    If Not Force And body = shp.Tags("plantuml") And shp.Tags("diagram_type") = Tag And shp.Tags("theme") = Theme Then
         Exit Function
     End If
     
     shp.Tags.Add "plantuml", body
     shp.Tags.Add "diagram_type", Tag
+    shp.Tags.Add "theme", Theme
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -256,11 +254,16 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Optio
     End If
     UpdateDiagram = True
     
-    Dim fname As String
-    
     Dim format As String
     format = GetSetting("PlantUML_Plugin", "Settings", "Format")
-    fname = GenerateDiagram(body, Tag, format)
+    
+    Dim ThemeDecl As String
+    If Theme > "" Then
+        ThemeDecl = "!theme " & Theme
+    End If
+    
+    Dim fname As String
+    fname = GenerateDiagram("@start" & Tag & vbNewLine & ThemeDecl & vbNewLine & body & vbNewLine & "@end" & Tag, format)
     
     SetPicture shp, fname, format
     Exit Function
