@@ -211,6 +211,7 @@ Public Sub InsertDiagram()
     Set shp = sld.Shapes.AddShape(msoShapeRectangle, 0, 0, 1, 1)
     shp.Fill.Transparency = 1#
     shp.Line.Visible = msoFalse
+    shp.LockAspectRatio = msoTrue
     shp.Tags.Add "plantuml", ""
     shp.Tags.Add "diagram_type", "uml"
     
@@ -303,10 +304,12 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     
     shp.Tags.Add "orig_width", w
     shp.Tags.Add "orig_height", h
-    
+    Dim lockedAspect As MsoTriState
+    lockedAspect = shp.LockAspectRatio
+    shp.LockAspectRatio = msoFalse
     shp.width = w * scaleX
     shp.height = h * scaleY
-    
+    shp.LockAspectRatio = lockedAspect
     Kill fname
 End Sub
 
