@@ -14,6 +14,10 @@ Private WithEvents App As Application
 Attribute App.VB_VarHelpID = -1
 Public Ribbon As IRibbonUI
 
+Private Sub App_AfterShapeSizeChange(ByVal shp As Shape)
+    PlantUml.RefreshDiagram shp
+End Sub
+
 Private Sub App_WindowSelectionChange(ByVal Sel As Selection)
     Ribbon.InvalidateControl ("PlantUMLBtn")
     Ribbon.InvalidateControl ("PlantUMLEdit")

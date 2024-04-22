@@ -30,7 +30,6 @@ Private WithEvents App As Application
 Attribute App.VB_VarHelpID = -1
 Private Initializing As Boolean
 
-
 Private Sub App_PresentationCloseFinal(ByVal Pres As Presentation)
     PlantUml.StopServer
 End Sub
@@ -68,7 +67,7 @@ Private Sub UpdateDiagram(Optional Force As Boolean = False)
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, ThemeCombo.Text, Force)
+        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, ThemeCombo.Text, ScalingStyleCombo.ListIndex, Force)
         DoEvents
     Loop While continue And Not Force
     WorkingLabel.Caption = ""
@@ -89,19 +88,23 @@ Private Sub FormatCombo_Change()
     UpdateDiagram True
 End Sub
 
+Private Sub ScalingStyleCombo_Change()
+    Code_Change
+End Sub
+
 Private Sub ServerComboBox_Change()
     If Initializing Then
         Exit Sub
     End If
     
     If ServerComboBox.ListIndex = -1 Then
-        PlantUml.SetRemoteHttpAddress ServerComboBox.Value
+        PlantUml.SetRemoteHttpAddress ServerComboBox.value
         Exit Sub
     ElseIf ServerComboBox.ListIndex = 0 Then
-        PlantUml.SetRemoteHttpAddress ServerComboBox.Value
+        PlantUml.SetRemoteHttpAddress ServerComboBox.value
         PlantUml.SetJarPath ""
     ElseIf ServerComboBox.ListIndex < ServerComboBox.ListCount - 1 Then
-        PlantUml.SetJarPath ServerComboBox.Value
+        PlantUml.SetJarPath ServerComboBox.value
     Else
         PlantUml.BrowseForJar
     End If
@@ -128,17 +131,17 @@ Private Sub SetupServerCombo()
     LocalJarPath = PlantUml.GetJarPath(False)
     If LocalJarPath > "" Then
         ServerComboBox.AddItem LocalJarPath
-        ServerComboBox.Value = LocalJarPath
+        ServerComboBox.value = LocalJarPath
         ServerComboBox.Style = fmStyleDropDownList
     Else
-        ServerComboBox.Value = PlantUml.GetRemoteHttpAddress()
+        ServerComboBox.value = PlantUml.GetRemoteHttpAddress()
         ServerComboBox.Style = fmStyleDropDownCombo
     End If
     ServerComboBox.AddItem "Browse for 'plantuml.jar'..."
     
-    MeasureTextBox.Text = ServerComboBox.Value
-    If MeasureTextBox.width > ServerComboBox.width - 16 Then
-        ServerComboBox.ControlTipText = ServerComboBox.Value
+    MeasureTextBox.Text = ServerComboBox.value
+    If MeasureTextBox.Width > ServerComboBox.Width - 16 Then
+        ServerComboBox.ControlTipText = ServerComboBox.value
     Else
         ServerComboBox.ControlTipText = ""
     End If
@@ -155,6 +158,7 @@ Private Sub UserForm_Activate()
     Set Target = PlantUml.GetSelectedShape()
     TypeCombo.Text = Target.Tags("diagram_type")
     ThemeCombo.Text = Target.Tags("theme")
+    ScalingStyleCombo.ListIndex = Target.Tags("scaling")
     Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
     
@@ -221,6 +225,10 @@ Private Sub UserForm_Initialize()
     ThemeCombo.AddItem "united"
     ThemeCombo.AddItem "vibrant"
     
+    ScalingStyleCombo.AddItem "Scale diagram to fit shape"
+    ScalingStyleCombo.AddItem "Resize shape to fit diagram"
+    ScalingStyleCombo.ListIndex = 0
+    
     Set oFormResize = New UserFormResizer
     Set oFormResize.ResizableForm = Me
     
@@ -236,9 +244,9 @@ Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
             For Each Tag In Split(.Tag, ",")
                 Select Case Tag
                 Case "width"
-                    .width = .width + X
+                    .Width = .Width + X
                 Case "height"
-                    .height = .height + Y
+                    .Height = .Height + Y
                 Case "bottom"
                     .Top = .Top + Y
                 Case "right"

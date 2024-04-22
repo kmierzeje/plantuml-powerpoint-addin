@@ -97,7 +97,7 @@ Function StringToHex(Text As String) As String
     chars = ToUTF8(Text)
     For i = LBound(chars) To UBound(chars)
         Dim ch As String
-        ch = hex(chars(i))
+        ch = Hex(chars(i))
         If Len(ch) = 1 Then
             ch = "0" & ch
         End If
@@ -208,8 +208,15 @@ Public Sub InsertDiagram()
     Dim shp As Shape
     Set sld = Application.ActiveWindow.View.Slide
     
-    Set shp = sld.Shapes.AddShape(msoShapeRectangle, 0, 0, 1, 1)
+    With Application.ActivePresentation.PageSetup
+        Set shp = sld.Shapes.AddShape(msoShapeRectangle, .SlideWidth / 4, .SlideHeight / 4, .SlideWidth / 2, .SlideHeight / 2)
+    End With
     shp.Fill.Transparency = 1#
+    With shp.TextFrame.TextRange.Font
+        .Color = RGB(0, 0, 0)
+        .Size = 14
+    End With
+    
     shp.Line.Visible = msoFalse
     shp.LockAspectRatio = msoTrue
     shp.Tags.Add "plantuml", ""
@@ -234,20 +241,54 @@ Function GetScale(orig As String, current As Single) As Single
 
 End Function
 
+Public Sub RefreshDiagram(shp As Shape)
+    On Error Resume Next
+    If shp.Tags("diagram_type") = "" Or shp.Tags("scaling") <> "0" Then
+        Exit Sub
+    End If
+    
+    AdjustCropping shp
+End Sub
 
-Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme As String, Optional Force As Boolean = False)
+Function EncodeColor(Number As Long) As String
+    EncodeColor = Hex(Number)
+    EncodeColor = String(6 - Len(EncodeColor), "0") & EncodeColor
+    EncodeColor = Right(EncodeColor, 2) & Mid(EncodeColor, 3, 2) & Left(EncodeColor, 2)
+End Function
+
+Private Function UpdateTag(shp As Shape, name As String, value As Variant) As Boolean
+    If shp.Tags(name) = value Then
+        Exit Function
+    End If
+    UpdateTag = True
+    shp.Tags.Add name, value
+End Function
+
+
+Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme As String, Scaling As Long, Optional Force As Boolean = False)
     On Error GoTo Failed
     UpdateDiagram = False
     
     body = Replace(body, vbCr, "")
     
-    If Not Force And body = shp.Tags("plantuml") And shp.Tags("diagram_type") = Tag And shp.Tags("theme") = Theme Then
+    Dim FontDecl As String
+    'With shp.TextFrame.TextRange.Font
+    '    FontDecl = "skinparam defaultFontName " & .Name & vbNewLine
+    '    FontDecl = FontDecl & "skinparam defaultFontSize " & Str(.Size) & vbNewLine
+    '    FontDecl = FontDecl & "skinparam defaultFontColor " & EncodeColor(.Color.RGB) & vbNewLine
+    'End With
+    Dim modified As Boolean
+    
+    modified = UpdateTag(shp, "plantuml", body) _
+           Or UpdateTag(shp, "diagram_type", Tag) _
+           Or UpdateTag(shp, "theme", Theme) _
+           Or UpdateTag(shp, "font", FontDecl) _
+           Or UpdateTag(shp, "scaling", Scaling) _
+           Or Force
+    
+    If Not modified Then
         Exit Function
     End If
-    
-    shp.Tags.Add "plantuml", body
-    shp.Tags.Add "diagram_type", Tag
-    shp.Tags.Add "theme", Theme
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -255,18 +296,21 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme
     End If
     UpdateDiagram = True
     
+    Dim ThemeDecl As String
+    If Theme > "" Then
+        ThemeDecl = "!theme " & Theme & vbNewLine
+    End If
+    
+    Dim Code As String
+    Code = "@start" & Tag & vbNewLine & FontDecl & ThemeDecl & body & vbNewLine & "@end" & Tag
+    
     Dim format As String
     format = GetSetting("PlantUML_Plugin", "Settings", "Format")
     
-    Dim ThemeDecl As String
-    If Theme > "" Then
-        ThemeDecl = "!theme " & Theme
-    End If
-    
     Dim fname As String
-    fname = GenerateDiagram("@start" & Tag & vbNewLine & ThemeDecl & vbNewLine & body & vbNewLine & "@end" & Tag, format)
+    fname = GenerateDiagram(Code, format)
     
-    SetPicture shp, fname, format
+    SetPicture shp, fname, format, Scaling
     Exit Function
 Failed:
     MsgBox Err.Description, vbCritical, "PlantUml", Err.HelpFile, Err.HelpContext
@@ -281,12 +325,34 @@ Function Maximum(v1 As Single, v2 As Single)
     End If
 End Function
 
-Public Sub SetPicture(shp As Shape, fname As String, format As String)
+Private Sub AdjustCropping(shp As Shape)
+    Dim CropScale As Single, w As Single, h As Single
+    w = Val(shp.Tags("orig_width"))
+    h = Val(shp.Tags("orig_height"))
+    
+    CropScale = shp.Width / w
+    If shp.Height / h < CropScale Then
+        CropScale = shp.Height / h
+    End If
+    With shp.PictureFormat.Crop
+        .PictureWidth = w * CropScale
+        .PictureHeight = h * CropScale
+    End With
+
+End Sub
+
+Public Sub SetPicture(shp As Shape, fname As String, format As String, Scaling As Long)
+    Dim scaleX As Single, scaleY As Single
+    If shp.Fill.Type = msoFillPicture Then
+        With shp.PictureFormat.Crop
+            scaleX = GetScale(shp.Tags("orig_width"), .PictureWidth)
+            scaleY = GetScale(shp.Tags("orig_height"), .PictureHeight)
+        End With
+    End If
+    
     shp.Fill.UserPicture (fname)
     
-    Dim w As Single, h As Single, scaleX As Single, scaleY As Single
-    scaleX = GetScale(shp.Tags("orig_width"), shp.width)
-    scaleY = GetScale(shp.Tags("orig_height"), shp.height)
+    Dim w As Single, h As Single
     
     If format = "svg" Then
         Set svg = CreateObject("Msxml2.DOMDocument")
@@ -297,18 +363,26 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String)
     Else
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
-        w = wia.width
-        h = wia.height
+        w = wia.Width
+        h = wia.Height
     End If
     
     
     shp.Tags.Add "orig_width", w
     shp.Tags.Add "orig_height", h
+    
     Dim lockedAspect As MsoTriState
     lockedAspect = shp.LockAspectRatio
     shp.LockAspectRatio = msoFalse
-    shp.width = w * scaleX
-    shp.height = h * scaleY
+    
+    If Scaling = 1 Then
+        shp.Width = w * scaleX
+        shp.Height = h * scaleY
+    Else
+        AdjustCropping shp
+    End If
+    
+    
     shp.LockAspectRatio = lockedAspect
     Kill fname
 End Sub
@@ -322,8 +396,8 @@ Sub PlantUMLEdit_GetVisible(Control As IRibbonControl, ByRef returnedVal)
     returnedVal = GetSelectedShape().Tags("diagram_type") > ""
 End Sub
 
-
 Public Function GetSelectedShape()
+    On Error Resume Next
     Set GetSelectedShape = ActiveWindow.Selection.TextRange.Parent.Parent.Item(1)
 End Function
 
