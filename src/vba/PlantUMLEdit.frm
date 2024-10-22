@@ -158,7 +158,11 @@ Private Sub UserForm_Activate()
     Set Target = PlantUml.GetSelectedShape()
     TypeCombo.Text = Target.Tags("diagram_type")
     ThemeCombo.Text = Target.Tags("theme")
-    ScalingStyleCombo.ListIndex = Target.Tags("scaling")
+    If Target.Tags("scaling") = "" Then
+        ScalingStyleCombo.ListIndex = 1
+    Else
+        ScalingStyleCombo.ListIndex = Target.Tags("scaling")
+    End If
     Code.Text = Target.Tags("plantuml")
     Code.SelStart = 0
     
@@ -225,8 +229,8 @@ Private Sub UserForm_Initialize()
     ThemeCombo.AddItem "united"
     ThemeCombo.AddItem "vibrant"
     
-    ScalingStyleCombo.AddItem "Scale diagram to fit shape"
-    ScalingStyleCombo.AddItem "Resize shape to fit diagram"
+    ScalingStyleCombo.AddItem "diagram scale to shape size"
+    ScalingStyleCombo.AddItem "shape size to diagram scale"
     ScalingStyleCombo.ListIndex = 0
     
     Set oFormResize = New UserFormResizer

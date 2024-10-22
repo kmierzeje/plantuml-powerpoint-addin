@@ -218,9 +218,9 @@ Public Sub InsertDiagram()
     End With
     
     shp.Line.Visible = msoFalse
-    shp.LockAspectRatio = msoTrue
     shp.Tags.Add "plantuml", ""
     shp.Tags.Add "diagram_type", "uml"
+    shp.Tags.Add "scaling", 0
     
     CreateEditor().Edit shp
 End Sub
@@ -342,6 +342,7 @@ Private Sub AdjustCropping(shp As Shape)
 End Sub
 
 Public Sub SetPicture(shp As Shape, fname As String, format As String, Scaling As Long)
+    On Error Resume Next
     Dim scaleX As Single, scaleY As Single
     If shp.Fill.Type = msoFillPicture Then
         With shp.PictureFormat.Crop
