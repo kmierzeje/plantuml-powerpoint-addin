@@ -96,6 +96,9 @@ Function StringToHex(Text As String) As String
     Dim chars() As Byte
     chars = ToUTF8(Text)
     For i = LBound(chars) To UBound(chars)
+        If chars(i) = Asc("\") Then
+            If InStr("\rnt", Chr(chars(i + 1))) = 0 Then out = out + "5C"
+        End If
         Dim ch As String
         ch = Hex(chars(i))
         If Len(ch) = 1 Then
