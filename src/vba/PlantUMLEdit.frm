@@ -31,6 +31,7 @@ Attribute App.VB_VarHelpID = -1
 Private Initializing As Boolean
 
 Private Sub App_PresentationCloseFinal(ByVal Pres As Presentation)
+    On Error Resume Next
     PlantUml.StopServer
 End Sub
 
