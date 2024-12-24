@@ -148,7 +148,10 @@ Function GetHttpServerAddress()
 End Function
 
 Function GetRemoteHttpAddress()
-    GetRemoteHttpAddress = GetSetting("PlantUML_Plugin", "Settings", "HttpServerAddress", "https://www.plantuml.com")
+    GetRemoteHttpAddress = GetSetting("PlantUML_Plugin", "Settings", "HttpServerAddress")
+    If GetRemoteHttpAddress = "" Then
+        GetRemoteHttpAddress = "https://www.plantuml.com"
+    End If
 End Function
 
 Function SetRemoteHttpAddress(address As String)
