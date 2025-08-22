@@ -45,8 +45,8 @@ Sub OnLoad(Ribbon As IRibbonUI)
     Set controller.Ribbon = Ribbon
 End Sub
 
-Sub SyncShell(ByVal Cmd As String, ByVal WindowStyle As VbAppWinStyle)
-    VBA.CreateObject("WScript.Shell").Run Cmd, WindowStyle, True
+Sub SyncShell(ByVal cmd As String, ByVal WindowStyle As VbAppWinStyle)
+    VBA.CreateObject("WScript.Shell").Run cmd, WindowStyle, True
 End Sub
 
 Function WriteToTmpFile(sText As String)
@@ -159,11 +159,19 @@ Function SetRemoteHttpAddress(address As String)
 End Function
 
 Public Sub StartServer()
+    On Error Resume Next
     If Not PlantServer Is Nothing Or GetPicowebEndpoint() = "" Then
         Exit Sub
     End If
 
-    Set PlantServer = VBA.CreateObject("WScript.Shell").Exec("javaw.exe -jar " & Q(GetJarPath()) & " -picoweb:" & GetPicowebEndpoint())
+    Do
+        Dim cmd As String
+        cmd = "javaw.exe -jar " & Q(GetJarPath()) & " -picoweb:" & GetPicowebEndpoint()
+        Set PlantServer = VBA.CreateObject("WScript.Shell").Exec(cmd)
+        If Not PlantServer Is Nothing Then
+            Exit Do
+        End If
+    Loop While MsgBox("Please make sure javaw.exe is runnable and not blocked by Windows Security or run """ & cmd & """ in command line and hit Cancel button.", vbRetryCancel, "Failed to run javaw.exe") = vbRetry
 End Sub
 
 Public Sub StopServer()
@@ -184,8 +192,16 @@ Function GenerateDiagram(request As String, format As String)
 End Function
 
 Function GenerateDiagramHttp(request As String, format As String)
-    StartServer
+    On Error GoTo Failed
     
+    GenerateDiagramHttp = RequestDiagramHttp(request, format)
+    Exit Function
+Failed:
+    StartServer
+    GenerateDiagramHttp = RequestDiagramHttp(request, format)
+End Function
+
+Function RequestDiagramHttp(request As String, format As String)
     Dim WinHttpReq As Object
     Set WinHttpReq = VBA.CreateObject("WinHttp.WinHttpRequest.5.1")
         
@@ -194,7 +210,7 @@ Function GenerateDiagramHttp(request As String, format As String)
     WinHttpReq.WaitForResponse
     Dim response() As Byte
     response = WinHttpReq.ResponseBody
-    GenerateDiagramHttp = WriteToTmpBinFile(response, format)
+    RequestDiagramHttp = WriteToTmpBinFile(response, format)
 End Function
 
 Function GenerateDiagramCmd(request As String, format As String)
@@ -336,9 +352,9 @@ Private Sub AdjustCropping(shp As Shape)
     w = Val(shp.Tags("orig_width"))
     h = Val(shp.Tags("orig_height"))
     
-    CropScale = shp.Width / w
-    If shp.Height / h < CropScale Then
-        CropScale = shp.Height / h
+    CropScale = shp.width / w
+    If shp.height / h < CropScale Then
+        CropScale = shp.height / h
     End If
     With shp.PictureFormat.Crop
         .PictureWidth = w * CropScale
@@ -370,8 +386,8 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String, Scaling A
     Else
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
-        w = wia.Width
-        h = wia.Height
+        w = wia.width
+        h = wia.height
     End If
     
     
@@ -383,8 +399,8 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String, Scaling A
     shp.LockAspectRatio = msoFalse
     
     If Scaling = 1 Then
-        shp.Width = w * scaleX
-        shp.Height = h * scaleY
+        shp.width = w * scaleX
+        shp.height = h * scaleY
     Else
         AdjustCropping shp
     End If
