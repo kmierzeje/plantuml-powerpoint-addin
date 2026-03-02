@@ -2,33 +2,10 @@ Attribute VB_Name = "PlantUml"
 Private controller As New UIController
 Private editors As Collection
 Private PlantServer As Object
-Private Const CP_UTF8 As Long = 65001
-
-Private Declare PtrSafe Function WideCharToMultiByte Lib "kernel32" ( _
-    ByVal CodePage As Long, _
-    ByVal dwFlags As Long, _
-    ByVal lpWideCharStr As LongPtr, _
-    ByVal cchWideChar As Long, _
-    ByVal lpMultiByteStr As LongPtr, _
-    ByVal cchMultiByte As Long, _
-    ByVal lpDefaultChar As LongPtr, _
-    ByVal lpUsedDefaultChar As Long) As Long
-
-Private Function ToUTF8(Text As String)
-    Dim lngResult As Long
-    Dim UTF8() As Byte
-
-    lngResult = WideCharToMultiByte(CP_UTF8, 0, StrPtr(Text), Len(Text), 0, 0, 0, 0)
-    If lngResult > 0 Then
-        ReDim UTF8(lngResult - 1)
-        WideCharToMultiByte CP_UTF8, 0, StrPtr(Text), Len(Text), VarPtr(UTF8(0)), lngResult, 0, 0
-    End If
-    ToUTF8 = UTF8
-End Function
 
 Function CreateEditor() As PlantUMLEdit
     Dim key As String
-    key = Str(ObjPtr(Application.ActiveWindow))
+    key = str(ObjPtr(Application.ActiveWindow))
     If editors Is Nothing Then
         Set editors = New Collection
     End If
@@ -45,8 +22,8 @@ Sub OnLoad(Ribbon As IRibbonUI)
     Set controller.Ribbon = Ribbon
 End Sub
 
-Sub SyncShell(ByVal cmd As String, ByVal WindowStyle As VbAppWinStyle)
-    VBA.CreateObject("WScript.Shell").Run cmd, WindowStyle, True
+Sub SyncShell(ByVal Cmd As String, ByVal WindowStyle As VbAppWinStyle)
+    VBA.CreateObject("WScript.Shell").Run Cmd, WindowStyle, True
 End Sub
 
 Function WriteToTmpFile(sText As String)
@@ -73,18 +50,18 @@ End Sub
 
 Function BrowseForJar()
     With Application.FileDialog(msoFileDialogOpen)
-            .AllowMultiSelect = False
-            .Title = "Path to plantuml.jar"
-            .Filters.Clear
-            .Filters.Add "Jar Files", "*.jar", 1
-            .InitialFileName = GetJarPath(False)
-            .Show
-            If .SelectedItems.Count = 0 Then
-                Exit Function
-            End If
-            BrowseForJar = .SelectedItems(1)
-            SetJarPath .SelectedItems(1)
-        End With
+        .AllowMultiSelect = False
+        .Title = "Path to plantuml.jar"
+        .Filters.Clear
+        .Filters.Add "Jar Files", "*.jar", 1
+        .InitialFileName = GetJarPath(False)
+        .Show
+        If .SelectedItems.Count = 0 Then
+            Exit Function
+        End If
+        BrowseForJar = .SelectedItems(1)
+        SetJarPath .SelectedItems(1)
+    End With
 End Function
 
 Function Q(Text As String)
@@ -94,7 +71,7 @@ End Function
 Function StringToHex(Text As String) As String
     Dim out As String
     Dim chars() As Byte
-    chars = ToUTF8(Text)
+    chars = Utils.ToUTF8(Text)
     For i = LBound(chars) To UBound(chars)
         If chars(i) = Asc("\") Then
             If InStr("\rnt", Chr(chars(i + 1))) = 0 Then out = out + "5C"
@@ -159,19 +136,11 @@ Function SetRemoteHttpAddress(address As String)
 End Function
 
 Public Sub StartServer()
-    On Error Resume Next
     If Not PlantServer Is Nothing Or GetPicowebEndpoint() = "" Then
         Exit Sub
     End If
 
-    Do
-        Dim cmd As String
-        cmd = "javaw.exe -jar " & Q(GetJarPath()) & " -picoweb:" & GetPicowebEndpoint()
-        Set PlantServer = VBA.CreateObject("WScript.Shell").Exec(cmd)
-        If Not PlantServer Is Nothing Then
-            Exit Do
-        End If
-    Loop While MsgBox("Please make sure javaw.exe is runnable and not blocked by Windows Security or run """ & cmd & """ in command line and hit Cancel button.", vbRetryCancel, "Failed to run javaw.exe") = vbRetry
+    Set PlantServer = VBA.CreateObject("WScript.Shell").Exec("javaw.exe -jar " & Q(GetJarPath()) & " -picoweb:" & GetPicowebEndpoint())
 End Sub
 
 Public Sub StopServer()
@@ -192,16 +161,8 @@ Function GenerateDiagram(request As String, format As String)
 End Function
 
 Function GenerateDiagramHttp(request As String, format As String)
-    On Error GoTo Failed
-    
-    GenerateDiagramHttp = RequestDiagramHttp(request, format)
-    Exit Function
-Failed:
     StartServer
-    GenerateDiagramHttp = RequestDiagramHttp(request, format)
-End Function
-
-Function RequestDiagramHttp(request As String, format As String)
+    
     Dim WinHttpReq As Object
     Set WinHttpReq = VBA.CreateObject("WinHttp.WinHttpRequest.5.1")
         
@@ -210,7 +171,7 @@ Function RequestDiagramHttp(request As String, format As String)
     WinHttpReq.WaitForResponse
     Dim response() As Byte
     response = WinHttpReq.ResponseBody
-    RequestDiagramHttp = WriteToTmpBinFile(response, format)
+    GenerateDiagramHttp = WriteToTmpBinFile(response, format)
 End Function
 
 Function GenerateDiagramCmd(request As String, format As String)

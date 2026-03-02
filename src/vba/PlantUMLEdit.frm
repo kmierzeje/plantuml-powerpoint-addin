@@ -1,25 +1,19 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit 
-   OleObjectBlob   =   "PlantUMLEdit.frx":0000
    Caption         =   "PlantUML"
    ClientHeight    =   7665
    ClientLeft      =   120
    ClientTop       =   465
    ClientWidth     =   11415
+   OleObjectBlob   =   "PlantUMLEdit.frx":0000
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
 End
 Attribute VB_Name = "PlantUMLEdit"
-Attribute VB_Base = "0{17C463E1-DDBC-4909-9F38-832D32AA2A81}{E0193FC7-C9E4-49DD-89A6-0C928B3CF82B}"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Attribute VB_TemplateDerived = False
-Attribute VB_Customizable = False
-
-
-
 Public Parent As Object
 Public Hidden As Boolean
 Private Focus As Boolean
@@ -29,6 +23,7 @@ Attribute oFormResize.VB_VarHelpID = -1
 Private WithEvents App As Application
 Attribute App.VB_VarHelpID = -1
 Private Initializing As Boolean
+
 
 Private Sub App_PresentationCloseFinal(ByVal Pres As Presentation)
     On Error Resume Next
@@ -83,10 +78,44 @@ Private Sub Code_Change()
     UpdateDiagram
 End Sub
 
-
 Private Sub FormatCombo_Change()
     SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.Text
     UpdateDiagram True
+End Sub
+
+Private Sub ExportButton_Click()
+    Dim FileName As String
+    Dim Filters(4) As String
+    Filters(0) = "PlantUML Files"
+    Filters(1) = "*.puml"
+    Filters(2) = "All Files"
+    Filters(3) = "*.*"
+
+    FileName = Utils.GetSaveFileNameWinAPI(Filters, "Export PlantUML", "diagram.puml")
+    If FileName = "" Then
+        Exit Sub
+    End If
+    Utils.WriteUTF8File FileName, Me.Code.Text
+End Sub
+
+Private Sub ImportButton_Click()
+    With Application.FileDialog(msoFileDialogOpen)
+        .AllowMultiSelect = False
+        .Title = "Import PlantUML"
+        .Filters.Clear
+        .Filters.Add "PlantUML Files", "*.puml", 1
+        .Filters.Add "All Files", "*.*", 2
+        .InitialFileName = GetJarPath(False)
+        .Show
+        If .SelectedItems.Count = 0 Then
+            Exit Sub
+        End If
+
+        Code.Text = Utils.ReadUTF8File(.SelectedItems(1))
+        Code.SetFocus
+        Code.SelStart = 0
+    End With
+    
 End Sub
 
 Private Sub ScalingStyleCombo_Change()
@@ -141,7 +170,7 @@ Private Sub SetupServerCombo()
     ServerComboBox.AddItem "Browse for 'plantuml.jar'..."
     
     MeasureTextBox.Text = ServerComboBox.value
-    If MeasureTextBox.Width > ServerComboBox.Width - 16 Then
+    If MeasureTextBox.width > ServerComboBox.width - 16 Then
         ServerComboBox.ControlTipText = ServerComboBox.value
     Else
         ServerComboBox.ControlTipText = ""
@@ -249,9 +278,9 @@ Private Sub oFormResize_Resizing(ByVal X As Single, ByVal Y As Single)
             For Each Tag In Split(.Tag, ",")
                 Select Case Tag
                 Case "width"
-                    .Width = .Width + X
+                    .width = .width + X
                 Case "height"
-                    .Height = .Height + Y
+                    .height = .height + Y
                 Case "bottom"
                     .Top = .Top + Y
                 Case "right"
