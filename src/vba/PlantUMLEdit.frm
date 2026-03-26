@@ -3,8 +3,8 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    Caption         =   "PlantUML"
    ClientHeight    =   7665
    ClientLeft      =   120
-   ClientTop       =   465
-   ClientWidth     =   11415
+   ClientTop       =   468
+   ClientWidth     =   11412
    OleObjectBlob   =   "PlantUMLEdit.frx":0000
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
@@ -63,7 +63,7 @@ Private Sub UpdateDiagram(Optional Force As Boolean = False)
     WorkingLabel.Caption = "Working..."
     Dim continue As Boolean
     Do
-        continue = PlantUml.UpdateDiagram(Target, Code.Text, TypeCombo.Text, ThemeCombo.Text, ScalingStyleCombo.ListIndex, Force)
+        continue = PlantUml.UpdateDiagram(Target, Code.text, TypeCombo.text, ThemeCombo.text, ScalingStyleCombo.ListIndex, Force)
         DoEvents
     Loop While continue And Not Force
     WorkingLabel.Caption = ""
@@ -79,7 +79,7 @@ Private Sub Code_Change()
 End Sub
 
 Private Sub FormatCombo_Change()
-    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.Text
+    SaveSetting "PlantUML_Plugin", "Settings", "Format", FormatCombo.text
     UpdateDiagram True
 End Sub
 
@@ -95,7 +95,7 @@ Private Sub ExportButton_Click()
     If FileName = "" Then
         Exit Sub
     End If
-    Utils.WriteUTF8File FileName, Me.Code.Text
+    Utils.WriteUTF8File FileName, Me.Code.text
 End Sub
 
 Private Sub ImportButton_Click()
@@ -111,7 +111,7 @@ Private Sub ImportButton_Click()
             Exit Sub
         End If
 
-        Code.Text = Utils.ReadUTF8File(.SelectedItems(1))
+        Code.text = Utils.ReadUTF8File(.SelectedItems(1))
         Code.SetFocus
         Code.SelStart = 0
     End With
@@ -147,7 +147,7 @@ Private Sub ThemeCombo_Change()
 End Sub
 
 Private Sub TypeCombo_Change()
-    EndLabel.Caption = "@end" & TypeCombo.Text
+    EndLabel.Caption = "@end" & TypeCombo.text
     Code_Change
 End Sub
 
@@ -169,7 +169,7 @@ Private Sub SetupServerCombo()
     End If
     ServerComboBox.AddItem "Browse for 'plantuml.jar'..."
     
-    MeasureTextBox.Text = ServerComboBox.value
+    MeasureTextBox.text = ServerComboBox.value
     If MeasureTextBox.width > ServerComboBox.width - 16 Then
         ServerComboBox.ControlTipText = ServerComboBox.value
     Else
@@ -182,18 +182,18 @@ Private Sub UserForm_Activate()
     Hidden = False
     SetupServerCombo
     Initializing = True
-    FormatCombo.Text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
+    FormatCombo.text = GetSetting("PlantUML_Plugin", "Settings", "Format", "svg")
     
     On Error Resume Next
     Set Target = PlantUml.GetSelectedShape()
-    TypeCombo.Text = Target.Tags("diagram_type")
-    ThemeCombo.Text = Target.Tags("theme")
+    TypeCombo.text = Target.Tags("diagram_type")
+    ThemeCombo.text = Target.Tags("theme")
     If Target.Tags("scaling") = "" Then
         ScalingStyleCombo.ListIndex = 1
     Else
         ScalingStyleCombo.ListIndex = Target.Tags("scaling")
     End If
-    Code.Text = Target.Tags("plantuml")
+    Code.text = Target.Tags("plantuml")
     Code.SelStart = 0
     
     Initializing = False
@@ -299,12 +299,87 @@ Private Sub AlignRight(ctl As Control, ByVal X As Single)
     ctl.Left = ctl.Left + X
 End Sub
 
+Private Sub SelectLines()
+    Dim SelEnd As Integer: SelEnd = Code.SelStart + Code.SelLength
+    
+    While Code.SelStart > 0 And Code.SelText <> Chr(13)
+        Code.SelStart = Code.SelStart - 1
+        Code.SelLength = 1
+    Wend
+    Code.SelStart = Code.SelStart + 1
+    Code.SelLength = SelEnd - Code.SelStart
+    While Right(Code.SelText, 1) <> Chr(13)
+        Code.SelLength = Code.SelLength + 1
+    Wend
+    Code.SelLength = Code.SelLength - 1
+End Sub
+
+Function IndentCode(Indent As String) As Boolean
+    SelectLines
+    Dim text As String: text = Code.SelText
+    
+    Dim pos As Integer: pos = 0
+    Do
+        text = Left(text, pos) & Indent & Mid(text, pos + 1)
+        IndentCode = True
+        pos = InStr(pos + Len(Indent), text, Chr(13))
+    Loop While pos > 0
+    
+    Dim SelStart As Integer: SelStart = Code.SelStart
+    Code.SelText = text
+    Code.SelStart = SelStart
+    Code.SelLength = Len(text)
+End Function
+
+Private Function CommonPrefixLen(ByRef text1 As String, pos As Integer, text2 As String)
+    Dim i As Integer
+    For i = 1 To Len(text2)
+        If Mid(text1, pos, i) <> Left(text2, i) Then
+            Exit For
+        End If
+    Next i
+    CommonPrefixLen = i - 1
+End Function
+
+Private Sub Outdent(Indent As String)
+    SelectLines
+    Dim text As String: text = Code.SelText
+    
+    Dim pos As Integer: pos = 0
+    Do
+        Dim size As Integer: size = CommonPrefixLen(text, pos + 1, Indent)
+        If size > 0 Then
+            text = Left(text, pos) & Mid(text, pos + size + 1)
+        End If
+        pos = InStr(pos + 1, text, Chr(13))
+    Loop While pos > 0
+    
+    Dim SelStart As Integer: SelStart = Code.SelStart
+    Code.SelText = text
+    Code.SelStart = SelStart
+    Code.SelLength = Len(text)
+End Sub
 
 Private Sub Code_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
-    If KeyCode = vbKeyEscape Then
+    Select Case KeyCode
+    Case Asc(vbTab)
+        Dim Indent As String: Indent = "  "
+        If Shift Then
+            Outdent (Indent)
+            KeyCode = 0
+        Else
+            If InStr(Code.SelText, Chr(13)) = 0 Then
+                Code.SelText = Indent
+                Code.SelStart = Code.SelStart + Code.SelLength
+            Else
+                IndentCode Indent
+            End If
+            KeyCode = 0
+        End If
+    Case vbKeyEscape
         KeyCode = 0
         CancelButton_Click
-    End If
+    End Select
 End Sub
 
 

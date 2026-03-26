@@ -64,24 +64,21 @@ Function BrowseForJar()
     End With
 End Function
 
-Function Q(Text As String)
-    Q = """" & Text & """"
+Function Q(text As String)
+    Q = """" & text & """"
 End Function
 
-Function StringToHex(Text As String) As String
+Function StringToHex(text As String) As String
     Dim out As String
     Dim chars() As Byte
-    chars = Utils.ToUTF8(Text)
+    chars = Utils.ToUTF8(text)
     For i = LBound(chars) To UBound(chars)
-        If chars(i) = Asc("\") Then
-            If InStr("\rnt", Chr(chars(i + 1))) = 0 Then out = out + "5C"
+        Dim Ch As String
+        Ch = Hex(chars(i))
+        If Len(Ch) = 1 Then
+            Ch = "0" & Ch
         End If
-        Dim ch As String
-        ch = Hex(chars(i))
-        If Len(ch) = 1 Then
-            ch = "0" & ch
-        End If
-        out = out & ch
+        out = out & Ch
     Next
     StringToHex = out
 End Function
@@ -197,7 +194,7 @@ Public Sub InsertDiagram()
     shp.Fill.Transparency = 1#
     With shp.TextFrame.TextRange.Font
         .Color = RGB(0, 0, 0)
-        .Size = 14
+        .size = 14
     End With
     
     shp.Line.Visible = msoFalse
@@ -247,12 +244,39 @@ Private Function UpdateTag(shp As Shape, name As String, value As Variant) As Bo
     shp.Tags.Add name, value
 End Function
 
+Private Function Clean(text As String) As String
+    Dim i As Integer, final As Integer
+    Dim ws As String
+    
+    
+    For i = 1 To Len(text)
+        If Mid(text, i, 6) = vbNewLine & "@end" Then
+            Exit For
+        End If
+        Dim Ch As String
+        Ch = Mid(text, i, 1)
+        If InStr(" " & vbNewLine & vbTab, Ch) > 0 Then
+            ws = ws & Ch
+        ElseIf Ch <> vbCr Then
+            If Ch = "\" Then
+               If InStr("\rnt" & vbNewLine, Mid(text, i + 1, 1)) = 0 Then Clean = Clean + "\"
+            End If
+            Clean = Clean & ws & Ch
+            ws = ""
+        End If
+    Next i
+    
+    If Clean = "" Then
+        Exit Function
+    ElseIf Mid(Clean, Len(Clean)) = "\" Then
+        Clean = Clean & "\"
+    End If
+End Function
+
 
 Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme As String, Scaling As Long, Optional Force As Boolean = False)
     On Error GoTo Failed
     UpdateDiagram = False
-    
-    body = Replace(body, vbCr, "")
     
     Dim FontDecl As String
     'With shp.TextFrame.TextRange.Font
@@ -272,6 +296,8 @@ Public Function UpdateDiagram(shp As Shape, body As String, Tag As String, Theme
     If Not modified Then
         Exit Function
     End If
+    
+    body = Clean(body)
 
     If body = "" Then
         shp.Fill.Transparency = 1#
@@ -342,8 +368,8 @@ Public Sub SetPicture(shp As Shape, fname As String, format As String, Scaling A
         Set svg = CreateObject("Msxml2.DOMDocument")
         svg.Load fname
     
-        w = Val(svg.SelectSingleNode("/svg/@width").Text)
-        h = Val(svg.SelectSingleNode("/svg/@height").Text)
+        w = Val(svg.SelectSingleNode("/svg/@width").text)
+        h = Val(svg.SelectSingleNode("/svg/@height").text)
     Else
         Set wia = CreateObject("WIA.ImageFile")
         wia.LoadFile fname
