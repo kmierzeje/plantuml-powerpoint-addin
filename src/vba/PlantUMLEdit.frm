@@ -3,8 +3,8 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} PlantUMLEdit
    Caption         =   "PlantUML"
    ClientHeight    =   7665
    ClientLeft      =   120
-   ClientTop       =   468
-   ClientWidth     =   11412
+   ClientTop       =   465
+   ClientWidth     =   11415
    OleObjectBlob   =   "PlantUMLEdit.frx":0000
    ShowModal       =   0   'False
    StartUpPosition =   1  'CenterOwner
@@ -14,6 +14,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
 Public Parent As Object
@@ -80,12 +81,13 @@ Private Sub Code_Change()
     UpdateDiagram
 End Sub
 
-Private Sub Code_KeyDown(pKey As Long, ByVal ShiftKey As Integer)
-    Select Case pKey
+Private Sub Code_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+    Select Case KeyCode
     Case Asc(vbTab)
         Dim Indent As String: Indent = "  "
-        If ShiftKey Then
+        If Shift Then
             Outdent (Indent)
+            KeyCode = 0
         Else
             If InStr(Code.SelText, Chr(13)) = 0 Then
                 Code.SelText = Indent
@@ -93,12 +95,25 @@ Private Sub Code_KeyDown(pKey As Long, ByVal ShiftKey As Integer)
             Else
                 IndentCode Indent
             End If
+            KeyCode = 0
         End If
-        pKey = 0
     Case vbKeyEscape
-        pKey = 0
+        KeyCode = 0
         CancelButton_Click
+    Case 13
+        KeepIndent
+        KeyCode = 0
     End Select
+End Sub
+
+Private Sub KeepIndent()
+    If Code.SelStart > 1 Then
+        Dim SelPos As Integer: SelPos = Code.SelStart + Code.CurLine
+        Dim Pos As Integer: Pos = InStrRev(Code.Text, Chr(10), SelPos)
+        Dim Line As String: Line = Mid(Code.Text, Pos + 1, SelPos - Pos)
+        Dim Indent As String: Indent = Left(Line, Len(Line) - Len(LTrim(Line)))
+        Code.SelText = Chr(13) & Indent
+    End If
 End Sub
 
 Private Sub FormatCombo_Change()
@@ -136,23 +151,23 @@ Private Sub ImportButton_Click()
 
         Dim Text As String
         Text = Utils.ReadUTF8File(.SelectedItems(1))
-        Dim pos As Integer
+        Dim Pos As Integer
         If Left(Text, 6) = "@start" Then
-            pos = 1
+            Pos = 1
         Else
-            pos = InStr(Text, vbNewLine & "@start")
+            Pos = InStr(Text, vbNewLine & "@start")
         End If
-        If pos > 0 Then
-            pos = InStr(pos + 1, Text, vbNewLine) + Len(vbNewLine)
-            Text = Mid(Text, pos)
+        If Pos > 0 Then
+            Pos = InStr(Pos + 1, Text, vbNewLine) + Len(vbNewLine)
+            Text = Mid(Text, Pos)
         End If
         
-        pos = InStr(Text, vbNewLine & "@end")
-        If pos > 1 Then
-            While Mid(Text, pos - 1, 1) = "\"
-                pos = InStr(pos + 1, Text, vbNewLine & "@end")
+        Pos = InStr(Text, vbNewLine & "@end")
+        If Pos > 1 Then
+            While Mid(Text, Pos - 1, 1) = "\"
+                Pos = InStr(Pos + 1, Text, vbNewLine & "@end")
             Wend
-            Text = Left(Text, pos - 1)
+            Text = Left(Text, Pos - 1)
         End If
         Code.Text = Text
         Code.SetFocus
@@ -367,12 +382,12 @@ Function IndentCode(Indent As String) As Boolean
     SelectLines
     Dim Text As String: Text = Code.SelText
     
-    Dim pos As Integer: pos = 0
+    Dim Pos As Integer: Pos = 0
     Do
-        Text = Left(Text, pos) & Indent & Mid(Text, pos + 1)
+        Text = Left(Text, Pos) & Indent & Mid(Text, Pos + 1)
         IndentCode = True
-        pos = InStr(pos + Len(Indent), Text, Chr(13))
-    Loop While pos > 0
+        Pos = InStr(Pos + Len(Indent), Text, Chr(13))
+    Loop While Pos > 0
     
     Dim SelStart As Integer: SelStart = Code.SelStart
     Code.SelText = Text
@@ -380,10 +395,10 @@ Function IndentCode(Indent As String) As Boolean
     Code.SelLength = Len(Text)
 End Function
 
-Private Function CommonPrefixLen(ByRef text1 As String, pos As Integer, text2 As String)
+Private Function CommonPrefixLen(ByRef text1 As String, Pos As Integer, text2 As String)
     Dim i As Integer
     For i = 1 To Len(text2)
-        If Mid(text1, pos, i) <> Left(text2, i) Then
+        If Mid(text1, Pos, i) <> Left(text2, i) Then
             Exit For
         End If
     Next i
@@ -394,14 +409,14 @@ Private Sub Outdent(Indent As String)
     SelectLines
     Dim Text As String: Text = Code.SelText
     
-    Dim pos As Integer: pos = 0
+    Dim Pos As Integer: Pos = 0
     Do
-        Dim size As Integer: size = CommonPrefixLen(Text, pos + 1, Indent)
+        Dim size As Integer: size = CommonPrefixLen(Text, Pos + 1, Indent)
         If size > 0 Then
-            Text = Left(Text, pos) & Mid(Text, pos + size + 1)
+            Text = Left(Text, Pos) & Mid(Text, Pos + size + 1)
         End If
-        pos = InStr(pos + 1, Text, Chr(13))
-    Loop While pos > 0
+        Pos = InStr(Pos + 1, Text, Chr(13))
+    Loop While Pos > 0
     
     Dim SelStart As Integer: SelStart = Code.SelStart
     Code.SelText = Text
@@ -409,27 +424,6 @@ Private Sub Outdent(Indent As String)
     Code.SelLength = Len(Text)
 End Sub
 
-Private Sub Code_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
-    Select Case KeyCode
-    Case Asc(vbTab)
-        Dim Indent As String: Indent = "  "
-        If Shift Then
-            Outdent (Indent)
-            KeyCode = 0
-        Else
-            If InStr(Code.SelText, Chr(13)) = 0 Then
-                Code.SelText = Indent
-                Code.SelStart = Code.SelStart + Code.SelLength
-            Else
-                IndentCode Indent
-            End If
-            KeyCode = 0
-        End If
-    Case vbKeyEscape
-        KeyCode = 0
-        CancelButton_Click
-    End Select
-End Sub
 
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
