@@ -101,19 +101,19 @@ Private Sub Code_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As 
         KeyCode = 0
         CancelButton_Click
     Case 13
-        KeepIndent
-        KeyCode = 0
+        If Code.SelStart > 1 Then
+            KeepIndent
+            KeyCode = 0
+        End If
     End Select
 End Sub
 
 Private Sub KeepIndent()
-    If Code.SelStart > 1 Then
-        Dim SelPos As Integer: SelPos = Code.SelStart + Code.CurLine
-        Dim Pos As Integer: Pos = InStrRev(Code.Text, Chr(10), SelPos)
-        Dim Line As String: Line = Mid(Code.Text, Pos + 1, SelPos - Pos)
-        Dim Indent As String: Indent = Left(Line, Len(Line) - Len(LTrim(Line)))
-        Code.SelText = Chr(13) & Indent
-    End If
+    Dim SelPos As Integer: SelPos = Code.SelStart + Code.CurLine
+    Dim Pos As Integer: Pos = InStrRev(Code.Text, Chr(10), SelPos)
+    Dim Line As String: Line = Mid(Code.Text, Pos + 1, SelPos - Pos)
+    Dim Indent As String: Indent = Left(Line, Len(Line) - Len(LTrim(Line)))
+    Code.SelText = Chr(13) & Indent
 End Sub
 
 Private Sub FormatCombo_Change()
